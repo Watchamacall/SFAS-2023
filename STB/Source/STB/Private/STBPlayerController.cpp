@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "STB/STBGameModes.h"
 
+#pragma Input Action Names
 const FString ASTBPlayerController::TopButtonActionName = TEXT("TopButton");
 const FString ASTBPlayerController::LeftButtonActionName = TEXT("LeftButton");
 const FString ASTBPlayerController::RightButtonActionName = TEXT("RightButton");
@@ -23,6 +24,7 @@ const FString ASTBPlayerController::RightStickXAxisName = TEXT("RightX");
 const FString ASTBPlayerController::RightStickYAxisName = TEXT("RightY");
 const FString ASTBPlayerController::LeftTriggerAxisName = TEXT("LeftTrigger");
 const FString ASTBPlayerController::RightTriggerAxisName = TEXT("RightTrigger");
+#pragma endregion
 
 ASTBPlayerController::ASTBPlayerController()
 {
@@ -123,15 +125,21 @@ void ASTBPlayerController::ContinueGame()
 	}	
 }
 
+
 void ASTBPlayerController::ShowUI(ESTBGameMode State)
 {
+	//Static casting the State to an int, allows for accuracy
 	const int TargetModeIndex = static_cast<int>(State);
+
 	for(int Count = 0; Count < static_cast<int>(ESTBGameMode::NumModes); ++Count)
 	{
+		//Shows true id the Count is the TargetModeIndex
 		const bool bShow = Count == TargetModeIndex;
+
 		Widgets[Count]->Show(bShow);
-		CurrentState = State;
+		
 	}
+	CurrentState = State;
 }
 
 const UGameplay* ASTBPlayerController::GetGameplay() const 

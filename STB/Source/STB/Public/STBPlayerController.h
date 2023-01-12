@@ -36,18 +36,34 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ContinueGame();	
 
+	/* 
+	* Shows the UI @param State UI element, hiding the rest of them
+	* @param State - The state which you want to show
+	*/
 	UFUNCTION(BlueprintCallable)
 	void ShowUI(ESTBGameMode State);
 
+	/* 
+	* Returns the Gameplay variable
+	*/
 	UFUNCTION(BlueprintCallable)
 	const UGameplay * GetGameplay() const;
 
+	/* 
+	* Returns the Player's current Vector2D location
+	*/
 	UFUNCTION(BlueprintCallable)
 	const FVector2D& GetCurrentPlayerLocation() const;
 	
+	/* 
+	* Returns the Vector2D location of the ball
+	*/
 	UFUNCTION(BlueprintCallable)
 	FVector2D GetCurrentBallLocation() const;
 
+	/*
+	* Returns true if the PlayerLocation is within bounds of the CurrentBallLocation. See Gameplay->TryMove for more information.
+	*/
 	UFUNCTION(BlueprintCallable)
 	bool TryMove();
 	
@@ -56,21 +72,39 @@ protected:
 	virtual void BeginPlay() override;	
 	virtual void SetupInputComponent() override;
 	
+	/* 
+	* The class which is the intro UMG is
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UScreen> IntroClass;
 
+	/*
+	* The class which is the menu UMG is
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UScreen> MenuClass;
 
+	/*
+	* The class which is the settings UMG is
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UScreen> SettingsClass;
 
+	/*
+	* The class which is the playing UMG is
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UScreen> PlayingClass;
 
+	/*
+	* The class which is the game over UMG is
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UScreen> GameOverClass;
 
+	/*
+	* The class which is the outro UMG is
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UScreen> OutroClass;
 	
@@ -100,11 +134,25 @@ protected:
 	
 private:
 
+	/*
+	* Sets up the Screen, based on the @paramref State, @paramref Class and given it a @paramref Name
+	* @param State - The Unique State for easy UI switching
+	* @param Class - The Class of the UI
+	* @param Name - The name of the UI
+	*/
 	void SetupScreen(ESTBGameMode State, TSubclassOf<UScreen> Class, FName Name);
 
+	/*
+	* Moves the Player on the X axis based on the @param Value
+	* @param Value - The value of movement (Ranges from -1 to 1)
+	*/
 	UFUNCTION()
 	void LeftRight(float Value);
 
+	/*
+	* Moves the Player on the Y axis based on the @param Value
+	* @param Value - The value of movement (Ranges from -1 to 1)
+	*/
 	UFUNCTION()
 	void UpDown(float Value);
 	

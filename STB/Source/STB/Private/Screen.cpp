@@ -95,6 +95,7 @@ void UScreen::Show(bool bShow)
 	}
 }
 
+#pragma region Event Implementation
 void UScreen::Select_Implementation()
 {
 }
@@ -118,7 +119,12 @@ void UScreen::OnShown_Implementation()
 void UScreen::OnHidden_Implementation()
 {
 }
+#pragma endregion
 
+/// <summary>
+/// Sets the state of the 
+/// </summary>
+/// <param name="InState"></param>
 void UScreen::SetState(EScreenState InState)
 {
 	State = InState;
