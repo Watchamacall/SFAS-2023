@@ -13,7 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "STB/STBGameModes.h"
 
-#pragma Input Action Names
+#pragma region Input Action Names
 const FString ASTBPlayerController::TopButtonActionName = TEXT("TopButton");
 const FString ASTBPlayerController::LeftButtonActionName = TEXT("LeftButton");
 const FString ASTBPlayerController::RightButtonActionName = TEXT("RightButton");
@@ -92,6 +92,7 @@ void ASTBPlayerController::CreateUI()
 	SetupScreen(ESTBGameMode::GameOver, GameOverClass, TEXT("GameOver"));
 	SetupScreen(ESTBGameMode::Outro, OutroClass, TEXT("Outro"));
 	ShowUI(ESTBGameMode::Intro);
+
 }
 
 void ASTBPlayerController::BeginNewGame()
@@ -116,7 +117,7 @@ void ASTBPlayerController::ContinueGame()
 		}
 		else if(Gameplay->GetLives() <= 0)
 		{
-			ShowUI(ESTBGameMode::GameOver);		
+			ShowUI(ESTBGameMode::GameOver);
 		}
 		else
 		{
@@ -133,7 +134,8 @@ void ASTBPlayerController::ShowUI(ESTBGameMode State)
 
 	for(int Count = 0; Count < static_cast<int>(ESTBGameMode::NumModes); ++Count)
 	{
-		//Shows true id the Count is the TargetModeIndex
+		//Shows if the Count is equal to the TargetModeIndex
+
 		const bool bShow = Count == TargetModeIndex;
 
 		Widgets[Count]->Show(bShow);
@@ -210,6 +212,16 @@ void ASTBPlayerController::SetupScreen(ESTBGameMode State, TSubclassOf<UScreen> 
 	Screen->SetOwningPlayer(this);
 	Screen->AddToViewport(0);
 	Widgets[static_cast<int>(State)] = Screen;
+}
+void ASTBPlayerController::SetupScreen()
+{
+	TArray<TSubclassOf<UScreen>> keys;
+	UI_Classes.GenerateKeyArray(keys);
+
+	for (size_t i = 0; i < UI_Classes.Num(); i++)
+	{
+		SetupScreen(*UI_Classes.Find(keys[i]), keys[i], keys[i].Get()->GetFName());
+	}
 }
 
 void ASTBPlayerController::LeftRight(float Value)

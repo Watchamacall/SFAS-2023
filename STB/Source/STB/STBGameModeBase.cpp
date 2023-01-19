@@ -21,8 +21,8 @@ void ASTBGameModeBase::BeginPlay()
 
 void ASTBGameModeBase::SetupUI() const
 {
-	ASTBPlayerController* Controller = Cast<ASTBPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	if(IsValid(Controller))
+	
+	if(ASTBPlayerController* Controller = Cast<ASTBPlayerController>(UGameplayStatics::GetPlayerController(this, 0)))
 	{
 		Controller->CreateUI();
 	}

@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include <STB/UIManagerComponent.h>
 #include "STBPlayerController.generated.h"
+
 
 class UGameplay;
 enum class ESTBGameMode : uint8;
@@ -20,6 +22,7 @@ class STB_API ASTBPlayerController : public APlayerController
 
 public:
 	
+
 	ASTBPlayerController();
 
 	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;
@@ -72,6 +75,11 @@ protected:
 	virtual void BeginPlay() override;	
 	virtual void SetupInputComponent() override;
 	
+	/*
+	 * Array of all the classes UI 
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="UI")
+		TMap<TSubclassOf<UScreen>, ESTBGameMode> UI_Classes;
 	/* 
 	* The class which is the intro UMG is
 	*/
@@ -141,6 +149,10 @@ private:
 	* @param Name - The name of the UI
 	*/
 	void SetupScreen(ESTBGameMode State, TSubclassOf<UScreen> Class, FName Name);
+	/*
+	* Sets up the Screen, based on the TMap UI_Classes, calls SetupScreen's brother
+	*/
+	void SetupScreen();
 
 	/*
 	* Moves the Player on the X axis based on the @param Value
@@ -181,6 +193,9 @@ private:
 	FRotator LastOrbitPawnViewRotation;
 	FVector OrbitPivot = FVector(0.0f, 0.0f, 100.0f);
 	float OrbitRadius = 200.0f;
+	/*
+	 * The current state the game is in
+	*/
 	ESTBGameMode CurrentState;
 
 	static const FString TopButtonActionName;

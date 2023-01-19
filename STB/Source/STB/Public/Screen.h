@@ -27,7 +27,7 @@ enum class EScreenState : uint8
  * Class to control the functionality of a single menu
  */
 UCLASS()
-class STB_API UScreen : public UUserWidget
+class STB_API UScreen : public UUIBaseWidget
 {
 	GENERATED_BODY()
 

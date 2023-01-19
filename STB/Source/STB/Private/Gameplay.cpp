@@ -82,7 +82,7 @@ bool UGameplay::TryMove(const FVector2D& PlayerGuess, const FVector2D& BallLocat
 
 	return bWin;
 }
-
+//TODO: Change this function to instead set the points of an object
 void UGameplay::ChooseRandomBallLocation()
 {
 	BallLocation = CurrentBallBounds.Origin;
