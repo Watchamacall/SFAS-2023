@@ -15,6 +15,7 @@ void UGameplay::StartNewGame()
 {
 	CurrentLevel = 0;
 	CurrentLives = StartingLives;
+	//TODO: Add creating object with x sides here, including linking up and displaying with a texture
 }
 
 void UGameplay::NextLevel()
@@ -25,10 +26,14 @@ void UGameplay::NextLevel()
 	{
 		const FProgressionLevelData* LevelData = Levels->SpawnLevel(CurrentLevel);
 
-		if(LevelData != nullptr)
+		if(LevelData)
 		{
 			CurrentBallBounds = LevelData->BallBounds;
 			CurrentRequiredDistance = LevelData->RequiredDistance;
+			if (LevelData->Mesh)
+			{
+				CurrentMesh = LevelData->Mesh->GetDefaultObject<UProGenMeshBase>();
+			}
 			ChooseRandomBallLocation();
 		}			
 	}

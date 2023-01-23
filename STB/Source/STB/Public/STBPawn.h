@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/DefaultPawn.h"
+//#include "SquareShape.h"
 #include "STBPawn.generated.h"
 
 UCLASS()
@@ -15,4 +16,13 @@ public:
 
 	ASTBPawn();
 
+
+	//virtual void BeginPlay() override;
+
+	//virtual void PostLoad() override;
+
+	//virtual void PostActorCreated() override;
+
+	//UPROPERTY(VisibleAnywhere)
+	//	USquareShape* SquareTest;
 };

@@ -86,27 +86,29 @@ void UPlayingScreen::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 void UPlayingScreen::Select_Implementation()
 {
-	if(PlayingState == EPlayingState::Guessing)
-	{
-		if(IsValid(PlayerController))
-		{
-			const bool bCorrect = PlayerController->TryMove();
-			if(!bCorrect)
-			{
-				if(const UGameplay* Gameplay = PlayerController->GetGameplay())
-				{
-					const int Lives = Gameplay->GetLives();
-					SetLives(Lives);
-				}					
-			}
+	//We are not guessing anymore so this isn't needed
+	
+	//if(PlayingState == EPlayingState::Guessing)
+	//{
+	//	if(IsValid(PlayerController))
+	//	{
+	//		const bool bCorrect = PlayerController->TryMove();
+	//		if(!bCorrect)
+	//		{
+	//			if(const UGameplay* Gameplay = PlayerController->GetGameplay())
+	//			{
+	//				const int Lives = Gameplay->GetLives();
+	//				SetLives(Lives);
+	//			}					
+	//		}
 
-			DoReveal(bCorrect);
-		}
-	}
-	else if(PlayingState == EPlayingState::Shown)
-	{
-		Reset();
-	}
+	//		DoReveal(bCorrect);
+	//	}
+	//}
+	//else if(PlayingState == EPlayingState::Shown)
+	//{
+	//	Reset();
+	//}
 }
 
 void UPlayingScreen::Show(bool bShow)

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ProgressionData.h"
+#include "SquareShape.h"
 #include "Gameplay.generated.h"
 
 UCLASS()
@@ -78,6 +79,9 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable)
 	void ChooseRandomBallLocation();
+
+	UPROPERTY(VisibleAnywhere)
+		UProGenMeshBase* CurrentMesh;
 	
 protected:
 	
@@ -109,5 +113,14 @@ private:
 	
 	UPROPERTY(VisibleAnywhere)
 	bool bWin;
+
+	UPROPERTY(VisibleAnywhere)
+		USceneComponent* WallObject;
+
+	UPROPERTY(EditAnywhere)
+		UPrimitiveComponent* ObjectToMatch;
+
+
+
 	
 };

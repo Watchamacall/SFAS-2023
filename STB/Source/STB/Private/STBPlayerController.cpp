@@ -24,6 +24,7 @@ const FString ASTBPlayerController::RightStickXAxisName = TEXT("RightX");
 const FString ASTBPlayerController::RightStickYAxisName = TEXT("RightY");
 const FString ASTBPlayerController::LeftTriggerAxisName = TEXT("LeftTrigger");
 const FString ASTBPlayerController::RightTriggerAxisName = TEXT("RightTrigger");
+const FString ASTBPlayerController::TopButtonAxisName = TEXT("TopButtonAxis");
 #pragma endregion
 
 ASTBPlayerController::ASTBPlayerController()
@@ -79,35 +80,44 @@ void ASTBPlayerController::Tick(float DeltaSeconds)
 		const auto Bounds = Gameplay->GetCurrentBallBounds();
 		DrawDebugBox(GetWorld(), Bounds.Origin, Bounds.BoxExtent, FColor::Green, false, 0.2f, SDPG_Foreground, 1.0f);		
 		DrawDebugSphere(GetWorld(), Gameplay->GetBallLocation(), 20.0f, 10.0f, FColor::Red, false, 0.2f, SDPG_Foreground, 1.0f);
+
+
 	}
 }
+
 
 void ASTBPlayerController::CreateUI()
 {
 	Widgets.Init(nullptr, static_cast<int>(ESTBGameMode::NumModes));
-	SetupScreen(ESTBGameMode::Intro, IntroClass, TEXT("Intro"));
+	/*SetupScreen(ESTBGameMode::Intro, IntroClass, TEXT("Intro"));
 	SetupScreen(ESTBGameMode::MainMenu, MenuClass, TEXT("MainMenu"));
 	SetupScreen(ESTBGameMode::Settings, SettingsClass, TEXT("Settings"));
 	SetupScreen(ESTBGameMode::Playing, PlayingClass, TEXT("Playing"));
 	SetupScreen(ESTBGameMode::GameOver, GameOverClass, TEXT("GameOver"));
-	SetupScreen(ESTBGameMode::Outro, OutroClass, TEXT("Outro"));
+	SetupScreen(ESTBGameMode::Outro, OutroClass, TEXT("Outro"));*/
+	SetupScreen();
 	ShowUI(ESTBGameMode::Intro);
-
 }
 
 void ASTBPlayerController::BeginNewGame()
 {
-	if(Gameplay != nullptr)
+	if(Gameplay)
 	{
 		CurrentPlayerLocation = FVector2D::ZeroVector;
 		Gameplay->StartNewGame();
 		Gameplay->NextLevel();
+		if (!ActorToShow)
+		{
+			ActorToShow = GetWorld()->SpawnActor<AProMeshSquareActor>();
+			ActorToShow->SetActorLocation(FVector(0.f, 0.f, 60.f));
+		}
+		ActorToShow->SquareMesh = Gameplay->CurrentMesh;
 	}
 }
 
 void ASTBPlayerController::ContinueGame()
 {
-	if(Gameplay != nullptr)
+	if(Gameplay)
 	{
 		CurrentPlayerLocation = FVector2D::ZeroVector;
 
@@ -195,13 +205,21 @@ void ASTBPlayerController::SetupInputComponent()
 	
 	if(InputComponent)
 	{
+		//Face Button Presses
 		InputComponent->BindAction(*TopButtonActionName, IE_Pressed, this, &ASTBPlayerController::TopButtonPress);
 		InputComponent->BindAction(*LeftButtonActionName, IE_Pressed, this, &ASTBPlayerController::LeftButtonPress);
 		InputComponent->BindAction(*RightButtonActionName, IE_Pressed, this, &ASTBPlayerController::RightButtonPress);
 		InputComponent->BindAction(*BottomButtonActionName, IE_Pressed, this, &ASTBPlayerController::BottomButtonPress);
 
-		InputComponent->BindAxis(*RightStickXAxisName, this, &ASTBPlayerController::LeftRight);
-		InputComponent->BindAxis(*RightStickYAxisName, this, &ASTBPlayerController::UpDown);
+		//Face Button Releases
+		InputComponent->BindAction(*TopButtonActionName, IE_Released, this, &ASTBPlayerController::TopButtonRelease);
+		InputComponent->BindAction(*LeftButtonActionName, IE_Released, this, &ASTBPlayerController::LeftButtonRelease);
+		InputComponent->BindAction(*RightButtonActionName, IE_Released, this, &ASTBPlayerController::RightButtonRelease);
+		InputComponent->BindAction(*BottomButtonActionName, IE_Released, this, &ASTBPlayerController::BottomButtonRelease);
+
+		//Left Stick Setup
+		InputComponent->BindAxis(*LeftStickXAxisName, this, &ASTBPlayerController::LeftRight);
+		InputComponent->BindAxis(*LeftStickYAxisName, this, &ASTBPlayerController::UpDown);
 	}
 }
 
@@ -228,6 +246,29 @@ void ASTBPlayerController::LeftRight(float Value)
 {
 	if(CurrentState == ESTBGameMode::Playing)
 	{
+#pragma region Button Movement
+		if (TopButton)
+		{
+			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(TopButtonActionName);
+			UpdateVertex('X', VertexIndex, Value);
+		}
+		if (LeftButton)
+		{
+			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(LeftButtonActionName);
+			UpdateVertex('X', VertexIndex, Value);
+		}
+		if (RightButton)
+		{
+			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(RightButtonActionName);
+			UpdateVertex('X', VertexIndex, Value);
+		}
+		if (BottomButton)
+		{
+			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(BottomButtonActionName);
+			UpdateVertex('X', VertexIndex, Value);
+		}
+#pragma endregion
+		//TODO: Set this up to utilise the face button presses
 		CurrentPlayerLocation.X = FMath::Clamp(CurrentPlayerLocation.X + Value, -PlayerLocationXRange, PlayerLocationXRange);
 	}
 }
@@ -236,16 +277,63 @@ void ASTBPlayerController::UpDown(float Value)
 {
 	if(CurrentState == ESTBGameMode::Playing)
 	{
+#pragma region Button Movement
+		if (TopButton)
+		{
+			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(TopButtonActionName);
+			UpdateVertex('Z', VertexIndex, Value);
+		}
+		if (LeftButton)
+		{
+			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(LeftButtonActionName);
+			UpdateVertex('Z', VertexIndex, Value);
+		}
+		if (RightButton)
+		{
+			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(RightButtonActionName);
+			UpdateVertex('Z', VertexIndex, Value);
+		}
+		if (BottomButton)
+		{
+			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(BottomButtonActionName);
+			UpdateVertex('Z', VertexIndex, Value);
+		}
+#pragma endregion
 		CurrentPlayerLocation.Y = FMath::Clamp(CurrentPlayerLocation.Y + Value, -PlayerLocationXRange, PlayerLocationXRange);
 	}
 }
 
+void ASTBPlayerController::UpdateVertex(char VectorName, int8 VertexIndex, float Value)
+{
+	FVector Vertex = Gameplay->CurrentMesh->GetVertex(VertexIndex);
+
+	switch (VectorName)
+	{
+	case 'X':
+		Vertex.X = FMath::Clamp(Vertex.X + Value, -50, 50);
+		break;
+	case 'Y':
+		Vertex.Y = FMath::Clamp(Vertex.Y + Value, -50, 50);
+		break;
+	case 'Z':
+		Vertex.Z = FMath::Clamp(Vertex.Z + Value, -50, 50);
+		break;
+	default:
+		break;
+	}
+	Gameplay->CurrentMesh->SetVertex(VertexIndex, Vertex);
+	Gameplay->CurrentMesh->UpdateMesh();
+}
+
+#pragma region Button Presses
 void ASTBPlayerController::TopButtonPress()
 {
 	if(const int Index = static_cast<int>(CurrentState); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
 	{
 		Widgets[Index]->Alt2();
 	}
+	TopButton = true;
+
 }
 
 void ASTBPlayerController::LeftButtonPress()
@@ -254,6 +342,7 @@ void ASTBPlayerController::LeftButtonPress()
 	{
 		Widgets[Index]->Alt1();
 	}
+	LeftButton = true;
 }
 
 void ASTBPlayerController::RightButtonPress()
@@ -262,6 +351,7 @@ void ASTBPlayerController::RightButtonPress()
 	{
 		Widgets[Index]->Back();
 	}
+	RightButton = true;
 }
 
 void ASTBPlayerController::BottomButtonPress()
@@ -270,5 +360,27 @@ void ASTBPlayerController::BottomButtonPress()
 	{
 		Widgets[Index]->Select();
 	}	
+	BottomButton = true;
 }
-
+#pragma endregion
+#pragma region Button Releases
+void ASTBPlayerController::TopButtonRelease()
+{
+	TopButton = false;
+	UE_LOG(LogTemp, Display, TEXT("Released Top Button"))
+}
+void ASTBPlayerController::LeftButtonRelease()
+{
+	LeftButton = false;
+	UE_LOG(LogTemp, Display, TEXT("Released Left Button"))
+}
+void ASTBPlayerController::RightButtonRelease()
+{
+	RightButton = false;
+	UE_LOG(LogTemp, Display, TEXT("Released Right Button"))
+}
+void ASTBPlayerController::BottomButtonRelease()
+{
+	BottomButton = false;
+	UE_LOG(LogTemp, Display, TEXT("Released Bottom Button"))
+}

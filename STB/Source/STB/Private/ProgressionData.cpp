@@ -10,20 +10,23 @@ const FProgressionLevelData* AProgressionData::SpawnLevel(int32 Level)
 {
 	FProgressionLevelData* LevelData = nullptr;
 
+	//TODO: Handle spawning object here
 	if(Level >= 0 && Levels.Num() > Level)
 	{
-		LevelData = &Levels[Level];
-		for(int CharacterIndex = 0; CharacterIndex < LevelData->Characters.Num(); ++CharacterIndex)
+		LevelData = &Levels[Level]; //Get's the primary level data
+		
+		//Handles everything to do with spawning in the Character and animations n that
+		for (int CharacterIndex = 0; CharacterIndex < LevelData->Characters.Num(); ++CharacterIndex)
 		{
 			FProgressionCharacterData& CharacterData = LevelData->Characters[CharacterIndex];
-			if(CharacterData.Character.IsValid() || CharacterData.Character.LoadSynchronous())
+			if (CharacterData.Character.IsValid() || CharacterData.Character.LoadSynchronous())
 			{
 				FActorSpawnParameters SpawnParameters;
 				SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 				AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(CharacterData.Character.Get(), CharacterData.Location, CharacterData.Rotation, SpawnParameters);
 				SpawnedActors.Add(SpawnedActor);
 
-				if(CharacterData.Animation.IsValid() || CharacterData.Animation.LoadSynchronous())
+				if (CharacterData.Animation.IsValid() || CharacterData.Animation.LoadSynchronous())
 				{
 					TArray<USceneComponent*> Components;
 					SpawnedActor->GetRootComponent()->GetChildrenComponents(false, Components);
@@ -37,7 +40,7 @@ const FProgressionLevelData* AProgressionData::SpawnLevel(int32 Level)
 						}
 					}
 
-					if(CharacterData.SkeletalMesh.IsValid())
+					if (CharacterData.SkeletalMesh.IsValid())
 					{
 						USkeletalMeshComponent* SkeletalMesh = CharacterData.SkeletalMesh.Get();
 						SkeletalMesh->SetAnimationMode(EAnimationMode::AnimationSingleNode);
@@ -48,6 +51,7 @@ const FProgressionLevelData* AProgressionData::SpawnLevel(int32 Level)
 				}
 			}
 		}
+		
 	}
 
 	return LevelData;

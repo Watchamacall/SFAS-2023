@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include <STB/UIManagerComponent.h>
+#include "ProMeshSquareActor.h"
 #include "STBPlayerController.generated.h"
 
 
@@ -83,32 +84,32 @@ protected:
 	/* 
 	* The class which is the intro UMG is
 	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-	TSubclassOf<UScreen> IntroClass;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	//TSubclassOf<UScreen> IntroClass;
 
-	/*
-	* The class which is the menu UMG is
-	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-	TSubclassOf<UScreen> MenuClass;
+	///*
+	//* The class which is the menu UMG is
+	//*/
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	//TSubclassOf<UScreen> MenuClass;
 
-	/*
-	* The class which is the settings UMG is
-	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-	TSubclassOf<UScreen> SettingsClass;
+	///*
+	//* The class which is the settings UMG is
+	//*/
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	//TSubclassOf<UScreen> SettingsClass;
 
-	/*
-	* The class which is the playing UMG is
-	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-	TSubclassOf<UScreen> PlayingClass;
+	///*
+	//* The class which is the playing UMG is
+	//*/
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	//TSubclassOf<UScreen> PlayingClass;
 
-	/*
-	* The class which is the game over UMG is
-	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-	TSubclassOf<UScreen> GameOverClass;
+	///*
+	//* The class which is the game over UMG is
+	//*/
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	//TSubclassOf<UScreen> GameOverClass;
 
 	/*
 	* The class which is the outro UMG is
@@ -167,6 +168,8 @@ private:
 	*/
 	UFUNCTION()
 	void UpDown(float Value);
+
+	void UpdateVertex(char VectorName, int8 VertexIndex, float Value);
 	
 	UFUNCTION()
 	void TopButtonPress();
@@ -179,6 +182,18 @@ private:
 
 	UFUNCTION()
 	void BottomButtonPress();
+
+	UFUNCTION()
+	void TopButtonRelease();
+
+	UFUNCTION()
+	void LeftButtonRelease();
+
+	UFUNCTION()
+	void RightButtonRelease();
+
+	UFUNCTION()
+	void BottomButtonRelease();
 
 	UPROPERTY(VisibleAnywhere)
 	UGameplay * Gameplay;
@@ -193,6 +208,16 @@ private:
 	FRotator LastOrbitPawnViewRotation;
 	FVector OrbitPivot = FVector(0.0f, 0.0f, 100.0f);
 	float OrbitRadius = 200.0f;
+
+	UPROPERTY(VisibleAnywhere)
+	AProMeshSquareActor* ActorToShow;
+
+#pragma region ButtonBooleans
+	bool TopButton;
+	bool LeftButton;
+	bool RightButton;
+	bool BottomButton;
+#pragma endregion
 	/*
 	 * The current state the game is in
 	*/
@@ -208,4 +233,5 @@ private:
 	static const FString RightStickYAxisName;
 	static const FString LeftTriggerAxisName;
 	static const FString RightTriggerAxisName;
+	static const FString TopButtonAxisName;
 };

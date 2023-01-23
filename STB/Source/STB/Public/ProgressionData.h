@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SquareShape.h"
 #include "ProgressionData.generated.h"
 
 USTRUCT(BlueprintType)
@@ -35,13 +36,19 @@ struct FProgressionLevelData
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FProgressionCharacterData> Characters;
+		TArray<FProgressionCharacterData> Characters;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FBoxSphereBounds BallBounds;
+		FBoxSphereBounds BallBounds;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float RequiredDistance;	
+		float RequiredDistance;	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		float TimeTillWallHit = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		TSubclassOf<UProceduralMeshComponent> Mesh;
 };
 
 UCLASS()
