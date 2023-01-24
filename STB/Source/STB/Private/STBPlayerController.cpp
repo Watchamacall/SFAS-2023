@@ -83,18 +83,16 @@ void ASTBPlayerController::Tick(float DeltaSeconds)
 
 
 	}
+	if (ActorToShow)
+	{
+		ActorToShow->BaseMesh->UpdateMesh();
+	}
 }
 
 
 void ASTBPlayerController::CreateUI()
 {
 	Widgets.Init(nullptr, static_cast<int>(ESTBGameMode::NumModes));
-	/*SetupScreen(ESTBGameMode::Intro, IntroClass, TEXT("Intro"));
-	SetupScreen(ESTBGameMode::MainMenu, MenuClass, TEXT("MainMenu"));
-	SetupScreen(ESTBGameMode::Settings, SettingsClass, TEXT("Settings"));
-	SetupScreen(ESTBGameMode::Playing, PlayingClass, TEXT("Playing"));
-	SetupScreen(ESTBGameMode::GameOver, GameOverClass, TEXT("GameOver"));
-	SetupScreen(ESTBGameMode::Outro, OutroClass, TEXT("Outro"));*/
 	SetupScreen();
 	ShowUI(ESTBGameMode::Intro);
 }
@@ -110,8 +108,10 @@ void ASTBPlayerController::BeginNewGame()
 		{
 			ActorToShow = GetWorld()->SpawnActor<AProMeshSquareActor>();
 			ActorToShow->SetActorLocation(FVector(0.f, 0.f, 60.f));
+			ActorToShow->SetActorRotation(FRotator(0.f, -90.f, 0.f));
 		}
-		ActorToShow->SquareMesh = Gameplay->CurrentMesh;
+		ActorToShow->BaseMesh = Gameplay->BaseMesh;
+		ActorToShow->BaseMesh->CreateMesh();
 	}
 }
 
@@ -191,6 +191,7 @@ void ASTBPlayerController::BeginPlay()
 	
 	if(IsValid(Gameplay))
 	{
+		Gameplay->ActorToShow = ActorToShow;
 		const TActorIterator<AProgressionData> ProgressionIterator(GetWorld());
 		if(ProgressionIterator)
 		{
@@ -249,22 +250,22 @@ void ASTBPlayerController::LeftRight(float Value)
 #pragma region Button Movement
 		if (TopButton)
 		{
-			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(TopButtonActionName);
+			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(TopButtonActionName);
 			UpdateVertex('X', VertexIndex, Value);
 		}
 		if (LeftButton)
 		{
-			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(LeftButtonActionName);
+			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(LeftButtonActionName);
 			UpdateVertex('X', VertexIndex, Value);
 		}
 		if (RightButton)
 		{
-			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(RightButtonActionName);
+			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(RightButtonActionName);
 			UpdateVertex('X', VertexIndex, Value);
 		}
 		if (BottomButton)
 		{
-			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(BottomButtonActionName);
+			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(BottomButtonActionName);
 			UpdateVertex('X', VertexIndex, Value);
 		}
 #pragma endregion
@@ -280,22 +281,22 @@ void ASTBPlayerController::UpDown(float Value)
 #pragma region Button Movement
 		if (TopButton)
 		{
-			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(TopButtonActionName);
+			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(TopButtonActionName);
 			UpdateVertex('Z', VertexIndex, Value);
 		}
 		if (LeftButton)
 		{
-			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(LeftButtonActionName);
+			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(LeftButtonActionName);
 			UpdateVertex('Z', VertexIndex, Value);
 		}
 		if (RightButton)
 		{
-			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(RightButtonActionName);
+			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(RightButtonActionName);
 			UpdateVertex('Z', VertexIndex, Value);
 		}
 		if (BottomButton)
 		{
-			int8 VertexIndex = Gameplay->CurrentMesh->VertexIndexFromString(BottomButtonActionName);
+			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(BottomButtonActionName);
 			UpdateVertex('Z', VertexIndex, Value);
 		}
 #pragma endregion
@@ -305,7 +306,7 @@ void ASTBPlayerController::UpDown(float Value)
 
 void ASTBPlayerController::UpdateVertex(char VectorName, int8 VertexIndex, float Value)
 {
-	FVector Vertex = Gameplay->CurrentMesh->GetVertex(VertexIndex);
+	FVector Vertex = ActorToShow->BaseMesh->GetVertex(VertexIndex);
 
 	switch (VectorName)
 	{
@@ -321,8 +322,8 @@ void ASTBPlayerController::UpdateVertex(char VectorName, int8 VertexIndex, float
 	default:
 		break;
 	}
-	Gameplay->CurrentMesh->SetVertex(VertexIndex, Vertex);
-	Gameplay->CurrentMesh->UpdateMesh();
+	ActorToShow->BaseMesh->SetVertex(VertexIndex, Vertex);
+	ActorToShow->BaseMesh->UpdateMesh();
 }
 
 #pragma region Button Presses

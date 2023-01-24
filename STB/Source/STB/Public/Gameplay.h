@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "ProgressionData.h"
 #include "SquareShape.h"
+#include "PentagonShape.h"
+#include "ProMeshSquareActor.h"
 #include "Gameplay.generated.h"
 
 UCLASS()
@@ -81,7 +83,11 @@ public:
 	void ChooseRandomBallLocation();
 
 	UPROPERTY(VisibleAnywhere)
-		UProGenMeshBase* CurrentMesh;
+		UProGenMeshBase* BaseMesh;
+	UPROPERTY(VisibleAnywhere)
+		UProGenMeshBase* MeshToMatch;
+	UPROPERTY(VisibleAnywhere)
+		UProMeshSquareActor* ActorToShow;
 	
 protected:
 	
@@ -112,15 +118,5 @@ private:
 	int CurrentLives;
 	
 	UPROPERTY(VisibleAnywhere)
-	bool bWin;
-
-	UPROPERTY(VisibleAnywhere)
-		USceneComponent* WallObject;
-
-	UPROPERTY(EditAnywhere)
-		UPrimitiveComponent* ObjectToMatch;
-
-
-
-	
+	bool bWin;	
 };

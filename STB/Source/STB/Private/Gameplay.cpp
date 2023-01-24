@@ -32,7 +32,16 @@ void UGameplay::NextLevel()
 			CurrentRequiredDistance = LevelData->RequiredDistance;
 			if (LevelData->Mesh)
 			{
-				CurrentMesh = LevelData->Mesh->GetDefaultObject<UProGenMeshBase>();
+				auto MeshClass = LevelData->Mesh;
+				if (MeshClass == USquareShape::StaticClass())
+				{
+					ActorToShow->CreateDefaultSubobject<USquareShape>();
+					ActorToShow = LevelData->Mesh->GetDefaultObject<USquareShape>();
+				}
+				else if (MeshClass == UPentagonShape::StaticClass())
+				{
+					BaseMesh = LevelData->Mesh->GetDefaultObject<UPentagonShape>();
+				}
 			}
 			ChooseRandomBallLocation();
 		}			

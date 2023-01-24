@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ProGenMeshBase.h"
+#include "SquareShape.h"
+#include "PentagonShape.h"
 #include "ProMeshSquareActor.generated.h"
 
 UCLASS()
@@ -15,9 +17,10 @@ class STB_API AProMeshSquareActor : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AProMeshSquareActor();
+	AProMeshSquareActor(UProGenMeshBase* Shape);
 
-	UPROPERTY(EditAnywhere)
-		UProGenMeshBase* SquareMesh;
+	UPROPERTY(VisibleAnywhere)
+		UProGenMeshBase* BaseMesh;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

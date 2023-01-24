@@ -48,7 +48,7 @@ struct FProgressionLevelData
 		float TimeTillWallHit = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		TSubclassOf<UProceduralMeshComponent> Mesh;
+		TSubclassOf<class UProceduralMeshComponent> Mesh;
 };
 
 UCLASS()

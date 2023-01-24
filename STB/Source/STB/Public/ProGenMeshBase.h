@@ -13,7 +13,9 @@ UCLASS()
 class STB_API UProGenMeshBase : public UProceduralMeshComponent
 {
 	GENERATED_BODY()
+
 public:
+	
 
 	UFUNCTION(BlueprintCallable)
 		virtual void CreateMesh();
