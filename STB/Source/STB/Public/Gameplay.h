@@ -87,7 +87,7 @@ public:
 	UPROPERTY(VisibleAnywhere)
 		UProGenMeshBase* MeshToMatch;
 	UPROPERTY(VisibleAnywhere)
-		UProMeshSquareActor* ActorToShow;
+		AProMeshSquareActor* ActorToShow;
 	
 protected:
 	

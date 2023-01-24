@@ -83,7 +83,7 @@ void ASTBPlayerController::Tick(float DeltaSeconds)
 
 
 	}
-	if (ActorToShow)
+	if (ActorToShow->BaseMesh)
 	{
 		ActorToShow->BaseMesh->UpdateMesh();
 	}
@@ -104,14 +104,6 @@ void ASTBPlayerController::BeginNewGame()
 		CurrentPlayerLocation = FVector2D::ZeroVector;
 		Gameplay->StartNewGame();
 		Gameplay->NextLevel();
-		if (!ActorToShow)
-		{
-			ActorToShow = GetWorld()->SpawnActor<AProMeshSquareActor>();
-			ActorToShow->SetActorLocation(FVector(0.f, 0.f, 60.f));
-			ActorToShow->SetActorRotation(FRotator(0.f, -90.f, 0.f));
-		}
-		ActorToShow->BaseMesh = Gameplay->BaseMesh;
-		ActorToShow->BaseMesh->CreateMesh();
 	}
 }
 
@@ -191,7 +183,18 @@ void ASTBPlayerController::BeginPlay()
 	
 	if(IsValid(Gameplay))
 	{
-		Gameplay->ActorToShow = ActorToShow;
+		//Creating the actor which will be showing the object the player will be able to move
+		if (!ActorToShow)
+		{
+			ActorToShow = GetWorld()->SpawnActor<AProMeshSquareActor>();
+			ActorToShow->SetActorLocation(FVector(0.f, 0.f, 60.f));
+			ActorToShow->SetActorRotation(FRotator(0.f, -90.f, 0.f));
+		}
+		if (!Gameplay->ActorToShow)
+		{
+			Gameplay->ActorToShow = ActorToShow;
+		}
+
 		const TActorIterator<AProgressionData> ProgressionIterator(GetWorld());
 		if(ProgressionIterator)
 		{
@@ -250,22 +253,22 @@ void ASTBPlayerController::LeftRight(float Value)
 #pragma region Button Movement
 		if (TopButton)
 		{
-			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(TopButtonActionName);
+			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(TopButtonActionName);
 			UpdateVertex('X', VertexIndex, Value);
 		}
 		if (LeftButton)
 		{
-			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(LeftButtonActionName);
+			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(LeftButtonActionName);
 			UpdateVertex('X', VertexIndex, Value);
 		}
 		if (RightButton)
 		{
-			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(RightButtonActionName);
+			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(RightButtonActionName);
 			UpdateVertex('X', VertexIndex, Value);
 		}
 		if (BottomButton)
 		{
-			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(BottomButtonActionName);
+			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(BottomButtonActionName);
 			UpdateVertex('X', VertexIndex, Value);
 		}
 #pragma endregion
@@ -281,22 +284,22 @@ void ASTBPlayerController::UpDown(float Value)
 #pragma region Button Movement
 		if (TopButton)
 		{
-			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(TopButtonActionName);
+			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(TopButtonActionName);
 			UpdateVertex('Z', VertexIndex, Value);
 		}
 		if (LeftButton)
 		{
-			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(LeftButtonActionName);
+			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(LeftButtonActionName);
 			UpdateVertex('Z', VertexIndex, Value);
 		}
 		if (RightButton)
 		{
-			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(RightButtonActionName);
+			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(RightButtonActionName);
 			UpdateVertex('Z', VertexIndex, Value);
 		}
 		if (BottomButton)
 		{
-			int8 VertexIndex = Gameplay->BaseMesh->VertexIndexFromString(BottomButtonActionName);
+			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(BottomButtonActionName);
 			UpdateVertex('Z', VertexIndex, Value);
 		}
 #pragma endregion

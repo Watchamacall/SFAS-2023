@@ -30,23 +30,19 @@ void UGameplay::NextLevel()
 		{
 			CurrentBallBounds = LevelData->BallBounds;
 			CurrentRequiredDistance = LevelData->RequiredDistance;
+
 			if (LevelData->Mesh)
 			{
-				auto MeshClass = LevelData->Mesh;
-				if (MeshClass == USquareShape::StaticClass())
+				if (ActorToShow->BaseMesh)
 				{
-					ActorToShow->CreateDefaultSubobject<USquareShape>();
-					ActorToShow = LevelData->Mesh->GetDefaultObject<USquareShape>();
+					ActorToShow = nullptr;
 				}
-				else if (MeshClass == UPentagonShape::StaticClass())
-				{
-					BaseMesh = LevelData->Mesh->GetDefaultObject<UPentagonShape>();
-				}
+				ActorToShow->BaseMesh = NewObject<UProGenMeshBase>(ActorToShow, LevelData->Mesh);
+				ActorToShow->BaseMesh->CreateMesh();
 			}
 			ChooseRandomBallLocation();
 		}			
 	}
-
 }
 
 void UGameplay::ResetLevel()

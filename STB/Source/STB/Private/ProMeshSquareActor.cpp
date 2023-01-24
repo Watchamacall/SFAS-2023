@@ -14,7 +14,7 @@ AProMeshSquareActor::AProMeshSquareActor()
 AProMeshSquareActor::AProMeshSquareActor(UProGenMeshBase* Shape)
 {
 	PrimaryActorTick.bCanEverTick = true;
-	RootComponent = CreateDefaultSubobject()
+	RootComponent = NewObject<UProGenMeshBase>(this, Shape->GetClass());
 }
 
 // Called when the game starts or when spawned
