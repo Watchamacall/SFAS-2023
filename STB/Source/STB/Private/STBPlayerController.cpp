@@ -85,7 +85,7 @@ void ASTBPlayerController::Tick(float DeltaSeconds)
 	}
 	if (ActorToShow->BaseMesh)
 	{
-		ActorToShow->BaseMesh->UpdateMesh();
+		ActorToShow->BaseMesh->CreateMesh();
 	}
 }
 

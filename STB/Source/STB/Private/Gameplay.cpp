@@ -30,16 +30,13 @@ void UGameplay::NextLevel()
 		{
 			CurrentBallBounds = LevelData->BallBounds;
 			CurrentRequiredDistance = LevelData->RequiredDistance;
-
-			if (LevelData->Mesh)
-			{
 				if (ActorToShow->BaseMesh)
 				{
-					ActorToShow = nullptr;
+					ActorToShow->BaseMesh = nullptr;
 				}
-				ActorToShow->BaseMesh = NewObject<UProGenMeshBase>(ActorToShow, LevelData->Mesh);
-				ActorToShow->BaseMesh->CreateMesh();
-			}
+				ActorToShow->BaseMesh = UProGenMeshBase::CreateMeshBase(ActorToShow, LevelData->AmountOfSidesOnShape, FVector::OneVector);
+				ActorToShow->BaseMesh->SetWorldLocation(FVector(0.f, 0.f, 60.f));
+			
 			ChooseRandomBallLocation();
 		}			
 	}

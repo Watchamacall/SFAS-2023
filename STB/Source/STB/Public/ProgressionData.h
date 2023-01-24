@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SquareShape.h"
 #include "ProgressionData.generated.h"
 
 USTRUCT(BlueprintType)
@@ -48,7 +47,7 @@ struct FProgressionLevelData
 		float TimeTillWallHit = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		TSubclassOf<class UProceduralMeshComponent> Mesh;
+		int AmountOfSidesOnShape;
 };
 
 UCLASS()

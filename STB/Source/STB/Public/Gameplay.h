@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "ProgressionData.h"
-#include "SquareShape.h"
-#include "PentagonShape.h"
 #include "ProMeshSquareActor.h"
 #include "Gameplay.generated.h"
 
