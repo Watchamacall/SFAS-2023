@@ -15,17 +15,26 @@ class STB_API AProMeshSquareActor : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AProMeshSquareActor();
-	/*AProMeshSquareActor(UProGenMeshBase* Shape);*/
 	
-
-	UPROPERTY(VisibleAnywhere)
+	/*
+	 * The Procedural Mesh which will be utilised to show the player's shape
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Actual Mesh")
 		UProGenMeshBase* BaseMesh;
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	/*If BaseMesh is showing None in Editor, Comment out ProMeshSquareActor.cpp:12 (BaseMesh=...); Compile; Uncomment; Compile*/
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	/*
+	 * Event to be called in Blueprints once we find this object in the World
+	*/
+	UFUNCTION(BlueprintNativeEvent)
+		void StartEvent();
+	/*
+	 * Event called to update the Shape based on the amount of sides it has
+	*/
+	UFUNCTION(BlueprintNativeEvent)
+		void UpdateEvent(int SidesOnShape);
+
+	UFUNCTION()
+		void NewProceduralMeshObject();
 
 };

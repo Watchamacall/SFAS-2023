@@ -49,6 +49,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	const FVector& GetBallLocation() const;
 	
+	UFUNCTION(BlueprintCallable)
+		int GetTimeToImpact() const;
 	/*
 	* Returns the current level the player is on
 	*/
@@ -81,14 +83,12 @@ public:
 	void ChooseRandomBallLocation();
 
 	UPROPERTY(VisibleAnywhere)
-		UProGenMeshBase* BaseMesh;
-	UPROPERTY(VisibleAnywhere)
-		UProGenMeshBase* MeshToMatch;
-	UPROPERTY(VisibleAnywhere)
 		AProMeshSquareActor* ActorToShow;
 	
 protected:
-	
+	/*
+	 * The amount of lives the player starts out with
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int StartingLives = 3;
 	
@@ -98,23 +98,46 @@ private:
 	* The levels
 	*/
 	UPROPERTY(VisibleAnywhere)
-	AProgressionData * Levels;
+		AProgressionData * Levels;
 
+	/*
+	 * Bounds for the ball to move around
+	*/
 	UPROPERTY(VisibleAnywhere)
-	FBoxSphereBounds CurrentBallBounds; 
+		FBoxSphereBounds CurrentBallBounds; 
 
+	/*
+	 * The location of the ball the player needs to go near
+	*/
 	UPROPERTY(VisibleAnywhere)
-	FVector BallLocation;
+		FVector BallLocation;
 
+	/*
+	 * How long the wall moves for before a check is made
+	*/
 	UPROPERTY(VisibleAnywhere)
-	float CurrentRequiredDistance;
+		float CurrentTimeUntilImpact;
+
+	/*
+	 * The distance the ball has to be around the BallLocation
+	*/
+	UPROPERTY(VisibleAnywhere)
+		float CurrentRequiredDistance;
+	/*
+	 * The current level the game is at
+	*/
+	UPROPERTY(VisibleAnywhere)
+		int CurrentLevel;
+
+	/*
+	 * The current lives the player has 
+	*/
+	UPROPERTY(VisibleAnywhere)
+		int CurrentLives;
 	
+	/*
+	 * If the player has won the level
+	*/
 	UPROPERTY(VisibleAnywhere)
-	int CurrentLevel;
-
-	UPROPERTY(VisibleAnywhere)
-	int CurrentLives;
-	
-	UPROPERTY(VisibleAnywhere)
-	bool bWin;	
+		bool bWin;	
 };

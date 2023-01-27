@@ -24,9 +24,9 @@ const FString ASTBPlayerController::RightStickXAxisName = TEXT("RightX");
 const FString ASTBPlayerController::RightStickYAxisName = TEXT("RightY");
 const FString ASTBPlayerController::LeftTriggerAxisName = TEXT("LeftTrigger");
 const FString ASTBPlayerController::RightTriggerAxisName = TEXT("RightTrigger");
-const FString ASTBPlayerController::TopButtonAxisName = TEXT("TopButtonAxis");
 #pragma endregion
 
+#pragma region Override Functions
 ASTBPlayerController::ASTBPlayerController()
 {
 	PlayerCameraManagerClass = ASTBPlayerCameraManager::StaticClass();
@@ -46,30 +46,40 @@ void ASTBPlayerController::PreProcessInput(const float DeltaTime, const bool bGa
 	}	
 }
 
-void ASTBPlayerController::UpdateCameraManager(float DeltaSeconds)
+void ASTBPlayerController::BeginPlay()
 {
-	if (ASTBPlayerCameraManager* STBCameraManager = Cast<ASTBPlayerCameraManager>(PlayerCameraManager))
+	Super::BeginPlay();
+
+	Gameplay = NewObject<UGameplay>();
+
+	if (IsValid(Gameplay))
 	{
-		STBCameraManager->SetLocationAndRotation(LastOrbitPawnLocation, LastOrbitPawnViewRotation);
-		STBCameraManager->UpdateCamera(DeltaSeconds);
+		//Getting the Actor within the map since UProceduralMeshComponent is annoying and won't work if spawned in during runtime, at least I couldn't get it to work
+		const TActorIterator<AProMeshSquareActor> SquareTest(GetWorld());
+		if (SquareTest)
+		{
+			ActorToShow = *SquareTest;
+			ActorToShow->StartEvent();
+		}
+		if (!Gameplay->ActorToShow)
+		{
+			Gameplay->ActorToShow = ActorToShow;
+		}
+
+		const TActorIterator<AWall> Wall(GetWorld());
+		if (Wall)
+		{
+			WallComponent = *Wall;
+		}
+
+		const TActorIterator<AProgressionData> ProgressionIterator(GetWorld());
+		if (ProgressionIterator)
+		{
+			Gameplay->SetLevels(*ProgressionIterator);
+		}
 	}
 }
 
-void ASTBPlayerController::UpdateRotation(float DeltaTime)
-{
-	if(APawn* const CurrentPawn = GetPawnOrSpectator())
-	{
-		FRotator Rotation = GetControlRotation();
-
-		Rotation.Yaw += RotationInput.Yaw * AxisScale * DeltaTime;
-		Rotation.Pitch += RotationInput.Pitch * AxisScale * DeltaTime;
-
-		LastOrbitPawnLocation = OrbitPivot + Rotation.Vector() * OrbitRadius;
-		LastOrbitPawnViewRotation = (OrbitPivot - LastOrbitPawnLocation).GetSafeNormal().Rotation();
-		CurrentPawn->SetActorLocationAndRotation(LastOrbitPawnLocation, LastOrbitPawnViewRotation);
-		SetControlRotation(Rotation);
-	}
-}
 
 void ASTBPlayerController::Tick(float DeltaSeconds)
 {
@@ -77,137 +87,28 @@ void ASTBPlayerController::Tick(float DeltaSeconds)
 
 	if(IsValid(Gameplay) && CurrentState == ESTBGameMode::Playing)
 	{
+		//TODO: Show where the current points are on the wall as it comes closer, allowing for precision
+
+		//TODO: Add the bonus content
 		const auto Bounds = Gameplay->GetCurrentBallBounds();
 		DrawDebugBox(GetWorld(), Bounds.Origin, Bounds.BoxExtent, FColor::Green, false, 0.2f, SDPG_Foreground, 1.0f);		
 		DrawDebugSphere(GetWorld(), Gameplay->GetBallLocation(), 20.0f, 10.0f, FColor::Red, false, 0.2f, SDPG_Foreground, 1.0f);
 
-
+		//TODO: Finish this part of the function off and make the wall not move at the speed of sound
+		//Moves x amount in y time, move that much times deltaTime (x/y)*DT;
+		//TODO: Set the Variable InitialWallVector
+		FVector CurrentWallLocation = WallComponent->GetActorLocation();
+		float Distance = FVector::Dist(ActorToShow->BaseMesh->GetComponentLocation(), WallInitialVector);
+		FVector NewWallLocation = FVector(CurrentWallLocation.X - (Distance * (Gameplay->GetTimeToImpact() * DeltaSeconds)), CurrentWallLocation.Y, CurrentWallLocation.Z);
+		WallComponent->SetActorLocation(NewWallLocation);
 	}
-	if (ActorToShow->BaseMesh)
-	{
-		ActorToShow->BaseMesh->CreateMesh();
-	}
-}
-
-
-void ASTBPlayerController::CreateUI()
-{
-	Widgets.Init(nullptr, static_cast<int>(ESTBGameMode::NumModes));
-	SetupScreen();
-	ShowUI(ESTBGameMode::Intro);
-}
-
-void ASTBPlayerController::BeginNewGame()
-{
-	if(Gameplay)
-	{
-		CurrentPlayerLocation = FVector2D::ZeroVector;
-		Gameplay->StartNewGame();
-		Gameplay->NextLevel();
-	}
-}
-
-void ASTBPlayerController::ContinueGame()
-{
-	if(Gameplay)
-	{
-		CurrentPlayerLocation = FVector2D::ZeroVector;
-
-		if(Gameplay->GetWin())
-		{
-			Gameplay->NextLevel();
-		}
-		else if(Gameplay->GetLives() <= 0)
-		{
-			ShowUI(ESTBGameMode::GameOver);
-		}
-		else
-		{
-			Gameplay->ChooseRandomBallLocation();
-		}
-	}	
-}
-
-
-void ASTBPlayerController::ShowUI(ESTBGameMode State)
-{
-	//Static casting the State to an int, allows for accuracy
-	const int TargetModeIndex = static_cast<int>(State);
-
-	for(int Count = 0; Count < static_cast<int>(ESTBGameMode::NumModes); ++Count)
-	{
-		//Shows if the Count is equal to the TargetModeIndex
-
-		const bool bShow = Count == TargetModeIndex;
-
-		Widgets[Count]->Show(bShow);
-		
-	}
-	CurrentState = State;
-}
-
-const UGameplay* ASTBPlayerController::GetGameplay() const 
-{
-	return Gameplay;
-}
-
-const FVector2D& ASTBPlayerController::GetCurrentPlayerLocation() const
-{
-	return CurrentPlayerLocation;
-}
-
-FVector2D ASTBPlayerController::GetCurrentBallLocation() const
-{
-	const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
-	FVector2D ScreenLocation = FVector2D::ZeroVector;
-	
-	if(IsValid(Gameplay))
-	{
-		const FVector BallLocation = Gameplay->GetBallLocation();
-		ProjectWorldLocationToScreen(BallLocation, ScreenLocation, true);
-	}
-	
-	return ScreenLocation - (ViewportSize * 0.5f);
-}
-
-bool ASTBPlayerController::TryMove()
-{
-	return Gameplay->TryMove(CurrentPlayerLocation, GetCurrentBallLocation());
-}
-
-void ASTBPlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-
-	Gameplay = NewObject<UGameplay>();
-	
-	if(IsValid(Gameplay))
-	{
-		//Creating the actor which will be showing the object the player will be able to move
-		if (!ActorToShow)
-		{
-			ActorToShow = GetWorld()->SpawnActor<AProMeshSquareActor>();
-			ActorToShow->SetActorLocation(FVector(0.f, 0.f, 60.f));
-			ActorToShow->SetActorRotation(FRotator(0.f, -90.f, 0.f));
-		}
-		if (!Gameplay->ActorToShow)
-		{
-			Gameplay->ActorToShow = ActorToShow;
-		}
-
-		const TActorIterator<AProgressionData> ProgressionIterator(GetWorld());
-		if(ProgressionIterator)
-		{
-			Gameplay->SetLevels(*ProgressionIterator);
-		}
-	}	
 }
 
 void ASTBPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-	
-	if(InputComponent)
+
+	if (InputComponent)
 	{
 		//Face Button Presses
 		InputComponent->BindAction(*TopButtonActionName, IE_Pressed, this, &ASTBPlayerController::TopButtonPress);
@@ -227,6 +128,109 @@ void ASTBPlayerController::SetupInputComponent()
 	}
 }
 
+#pragma endregion
+
+#pragma region Update Functions
+void ASTBPlayerController::UpdateCameraManager(float DeltaSeconds)
+{
+	if (ASTBPlayerCameraManager* STBCameraManager = Cast<ASTBPlayerCameraManager>(PlayerCameraManager))
+	{
+		STBCameraManager->SetLocationAndRotation(LastOrbitPawnLocation, LastOrbitPawnViewRotation);
+		STBCameraManager->UpdateCamera(DeltaSeconds);
+	}
+}
+
+void ASTBPlayerController::UpdateRotation(float DeltaTime)
+{
+	if (APawn* const CurrentPawn = GetPawnOrSpectator())
+	{
+		FRotator Rotation = GetControlRotation();
+
+		Rotation.Yaw += RotationInput.Yaw * AxisScale * DeltaTime;
+		Rotation.Pitch += RotationInput.Pitch * AxisScale * DeltaTime;
+
+		LastOrbitPawnLocation = OrbitPivot + Rotation.Vector() * OrbitRadius;
+		LastOrbitPawnViewRotation = (OrbitPivot - LastOrbitPawnLocation).GetSafeNormal().Rotation();
+		CurrentPawn->SetActorLocationAndRotation(LastOrbitPawnLocation, LastOrbitPawnViewRotation);
+		SetControlRotation(Rotation);
+	}
+}
+#pragma endregion
+
+#pragma region Game Functions
+void ASTBPlayerController::BeginNewGame()
+{
+	if(Gameplay)
+	{
+		ActorToShow->BaseMesh->SetWorldLocation(ActorToShowOrigin);
+		
+		CurrentTimeWallInMotion = 0.f;
+
+		if (WallComponent)
+		{
+			WallComponent->SetActorLocation(WallInitialVector);
+		}
+
+		Gameplay->StartNewGame();
+		Gameplay->NextLevel();
+		ActorToShow->BaseMesh->SetVertexMinMax(SingleVertexXYMovementMin, SingleVertexXYMovementMax); //Leave this here, will cause chaos otherwise
+	}
+}
+
+void ASTBPlayerController::ContinueGame()
+{
+	if(Gameplay)
+	{
+		ActorToShow->BaseMesh->SetWorldLocation(ActorToShowOrigin);
+
+		if(Gameplay->GetWin())
+		{
+			Gameplay->NextLevel();
+		}
+		else if(Gameplay->GetLives() <= 0)
+		{
+			ShowUI(ESTBGameMode::GameOver);
+		}
+		else
+		{
+			Gameplay->ChooseRandomBallLocation();
+		}
+	}	
+}
+
+bool ASTBPlayerController::TryMove()
+{
+	//TODO: Change this function to work with checking the positions/colliders between eachother
+	return Gameplay->TryMove(CurrentPlayerLocation, GetCurrentBallLocation());
+}
+#pragma endregion
+
+//TODO: Fix the bug with the UI, if pressed fast enough can allow for more than one UI to be active at once (Make events only occur if the CurrentUI Element has finished it's Animation
+#pragma region UI Functions
+void ASTBPlayerController::CreateUI()
+{
+	Widgets.Init(nullptr, static_cast<int>(ESTBGameMode::NumModes));
+	SetupScreen();
+	ShowUI(ESTBGameMode::Intro);
+}
+
+void ASTBPlayerController::ShowUI(ESTBGameMode State)
+{
+	//Static casting the State to an int, allows for accuracy
+	const int TargetModeIndex = static_cast<int>(State);
+
+	for(int Count = 0; Count < static_cast<int>(ESTBGameMode::NumModes); ++Count)
+	{
+		//Shows if the Count is equal to the TargetModeIndex
+
+		const bool bShow = Count == TargetModeIndex;
+
+		Widgets[Count]->Show(bShow);
+		
+	}
+	CurrentState = State;
+}
+
 void ASTBPlayerController::SetupScreen(ESTBGameMode State, TSubclassOf<UScreen> Class, FName Name)
 {
 	UScreen* Screen = NewObject<UScreen>(this, Class, Name);
@@ -235,6 +239,7 @@ void ASTBPlayerController::SetupScreen(ESTBGameMode State, TSubclassOf<UScreen> 
 	Screen->AddToViewport(0);
 	Widgets[static_cast<int>(State)] = Screen;
 }
+
 void ASTBPlayerController::SetupScreen()
 {
 	TArray<TSubclassOf<UScreen>> keys;
@@ -246,6 +251,34 @@ void ASTBPlayerController::SetupScreen()
 	}
 }
 
+#pragma endregion
+#pragma region Get Functions
+const UGameplay* ASTBPlayerController::GetGameplay() const 
+{
+	return Gameplay;
+}
+
+const FVector2D& ASTBPlayerController::GetCurrentPlayerLocation() const
+{
+	return CurrentPlayerLocation;
+}
+
+FVector2D ASTBPlayerController::GetCurrentBallLocation() const
+{
+	//TODO: Return an array of FVector giving the coords of all the points in the rendered object
+	const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+	FVector2D ScreenLocation = FVector2D::ZeroVector;
+	
+	if(IsValid(Gameplay))
+	{
+		const FVector BallLocation = Gameplay->GetBallLocation();
+		ProjectWorldLocationToScreen(BallLocation, ScreenLocation, true);
+	}
+	
+	return ScreenLocation - (ViewportSize * 0.5f);
+}
+#pragma endregion
+#pragma region Movement Functions
 void ASTBPlayerController::LeftRight(float Value)
 {
 	if(CurrentState == ESTBGameMode::Playing)
@@ -271,9 +304,18 @@ void ASTBPlayerController::LeftRight(float Value)
 			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(BottomButtonActionName);
 			UpdateVertex('X', VertexIndex, Value);
 		}
+		if (TopButton || LeftButton || RightButton || BottomButton) //Exists so buttons can be pressed together and moved at the same time
+		{
+			return;
+		}
+		//If none of the buttons have been pressed
+		FVector CurrentLocation = ActorToShow->BaseMesh->GetComponentLocation();
+		CurrentLocation = FVector(CurrentLocation.X , CurrentLocation.Y + ((Value * WholeObjectMoveSpeed) * GetWorld()->GetDeltaSeconds()), CurrentLocation.Z); //Set on Y axis due to the X axis being front
+		ActorToShow->BaseMesh->SetWorldLocation(CurrentLocation);
 #pragma endregion
-		//TODO: Set this up to utilise the face button presses
-		CurrentPlayerLocation.X = FMath::Clamp(CurrentPlayerLocation.X + Value, -PlayerLocationXRange, PlayerLocationXRange);
+
+		//DEBUG
+		//CurrentPlayerLocation.X = FMath::Clamp(CurrentPlayerLocation.X + Value, -SingleVertexXMovement, SingleVertexXMovement);
 	}
 }
 
@@ -286,53 +328,63 @@ void ASTBPlayerController::UpDown(float Value)
 		{
 			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(TopButtonActionName);
 			UpdateVertex('Z', VertexIndex, Value);
+			return;
 		}
 		if (LeftButton)
 		{
 			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(LeftButtonActionName);
 			UpdateVertex('Z', VertexIndex, Value);
+			return;
 		}
 		if (RightButton)
 		{
 			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(RightButtonActionName);
 			UpdateVertex('Z', VertexIndex, Value);
+			return;
 		}
 		if (BottomButton)
 		{
 			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(BottomButtonActionName);
 			UpdateVertex('Z', VertexIndex, Value);
+			return;
 		}
 #pragma endregion
-		CurrentPlayerLocation.Y = FMath::Clamp(CurrentPlayerLocation.Y + Value, -PlayerLocationXRange, PlayerLocationXRange);
+		FVector CurrentLocation = ActorToShow->BaseMesh->GetComponentLocation();
+		CurrentLocation = FVector(CurrentLocation.X, CurrentLocation.Y, CurrentLocation.Z + ((Value * WholeObjectMoveSpeed) * GetWorld()->GetDeltaSeconds()));
+		ActorToShow->BaseMesh->SetWorldLocation(CurrentLocation);
+		
+		//DEBUG
+		//CurrentPlayerLocation.Y = FMath::Clamp(CurrentPlayerLocation.Y + Value, -SingleVertexYMovement, SingleVertexYMovement);
 	}
 }
 
 void ASTBPlayerController::UpdateVertex(char VectorName, int8 VertexIndex, float Value)
 {
 	FVector Vertex = ActorToShow->BaseMesh->GetVertex(VertexIndex);
+	FXYMinMax CurrentVertexMinMax = ActorToShow->BaseMesh->GetVertexMinMax(VertexIndex);
 
 	switch (VectorName)
 	{
 	case 'X':
-		Vertex.X = FMath::Clamp(Vertex.X + Value, -50, 50);
+		Vertex.X = FMath::Clamp(Vertex.X + ((-Value * VertexMoveSpeed) * GetWorld()->GetDeltaSeconds()), CurrentVertexMinMax.XYMin.X, CurrentVertexMinMax.XYMax.X);
 		break;
 	case 'Y':
-		Vertex.Y = FMath::Clamp(Vertex.Y + Value, -50, 50);
+		Vertex.Y = FMath::Clamp(Vertex.Y + ((Value * VertexMoveSpeed) * GetWorld()->GetDeltaSeconds()), -50, 50); //Poor Y
 		break;
 	case 'Z':
-		Vertex.Z = FMath::Clamp(Vertex.Z + Value, -50, 50);
+		Vertex.Z = FMath::Clamp(Vertex.Z + ((Value * VertexMoveSpeed)* GetWorld()->GetDeltaSeconds()), CurrentVertexMinMax.XYMin.Y, CurrentVertexMinMax.XYMax.Y);
 		break;
 	default:
 		break;
 	}
 	ActorToShow->BaseMesh->SetVertex(VertexIndex, Vertex);
-	ActorToShow->BaseMesh->UpdateMesh();
+	ActorToShow->BaseMesh->UpdateMeshInternally();
 }
-
+#pragma endregion
 #pragma region Button Presses
 void ASTBPlayerController::TopButtonPress()
 {
-	if(const int Index = static_cast<int>(CurrentState); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
+	if(const int Index = static_cast<int>(CurrentState.GetValue()); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
 	{
 		Widgets[Index]->Alt2();
 	}
@@ -342,7 +394,7 @@ void ASTBPlayerController::TopButtonPress()
 
 void ASTBPlayerController::LeftButtonPress()
 {
-	if(const int Index = static_cast<int>(CurrentState); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
+	if(const int Index = static_cast<int>(CurrentState.GetValue()); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
 	{
 		Widgets[Index]->Alt1();
 	}
@@ -351,7 +403,7 @@ void ASTBPlayerController::LeftButtonPress()
 
 void ASTBPlayerController::RightButtonPress()
 {
-	if(const int Index = static_cast<int>(CurrentState); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
+	if(const int Index = static_cast<int>(CurrentState.GetValue()); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
 	{
 		Widgets[Index]->Back();
 	}
@@ -360,7 +412,7 @@ void ASTBPlayerController::RightButtonPress()
 
 void ASTBPlayerController::BottomButtonPress()
 {
-	if(const int Index = static_cast<int>(CurrentState); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
+	if(const int Index = static_cast<int>(CurrentState.GetValue()); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
 	{
 		Widgets[Index]->Select();
 	}	
@@ -388,3 +440,4 @@ void ASTBPlayerController::BottomButtonRelease()
 	BottomButton = false;
 	UE_LOG(LogTemp, Display, TEXT("Released Bottom Button"))
 }
+#pragma endregion

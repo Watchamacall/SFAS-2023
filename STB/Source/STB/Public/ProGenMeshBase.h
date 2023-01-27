@@ -6,6 +6,23 @@
 #include "ProceduralMeshComponent.h"
 #include "ProGenMeshBase.generated.h"
 
+USTRUCT(BlueprintType)
+struct FXYMinMax
+{
+	GENERATED_USTRUCT_BODY()
+	FXYMinMax() {}
+	FXYMinMax(FVector2D NewXYMin, FVector2D NewXYMax)
+	{
+		XYMin = NewXYMin;
+		XYMax = NewXYMax;
+	}
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FVector2D XYMin;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FVector2D XYMax;
+};
+
 /**
  * 
  */
@@ -17,22 +34,55 @@ class STB_API UProGenMeshBase : public UProceduralMeshComponent
 
 public:
 
-	//UProGenMeshBase();
-	//UProGenMeshBase(FVector ObjectScale, TArray<int32> Triangles, TArray<FVector> Verticies, TArray<FVector> Normals, TArray<FVector2D> UV0, TArray<FProcMeshTangent> Tangents, TArray<FLinearColor> VertexColours);
-
-	static UProGenMeshBase* CreateMeshBase(UObject* ObjectToAttach, int SidesOnShape, FVector ObjectScale);
-
+	UFUNCTION(BlueprintCallable)
+		virtual void UpdateAllComponents(FVector ObjectScale, TArray<int32> Triangles, TArray<FVector> Verticies, TArray<FVector> Normals, TArray<FVector> UV0, TArray<FProcMeshTangent> Tangents, TArray<FLinearColor> VertexColours);
+	/*
+	 * Creates the initial mesh based on the values first inputted in the Blueprint 
+	*/
 	UFUNCTION(BlueprintCallable)
 		virtual void CreateMesh();
+	/*
+	 * Updates the mesh's variables based on the number of sides the shape will be, calculates Tries and everything
+	*/
 	UFUNCTION(BlueprintCallable)
-		virtual void UpdateMesh();
+		virtual void UpdateMesh(int SidesOnShape);
+	/*
+	 * Updates the mesh internally, would be overriding but Unreal doesn't like same named functions
+	*/
+	UFUNCTION(BlueprintCallable)
+		virtual void UpdateMeshInternally();
 
+	UFUNCTION()
+		void UVRecount();
+	/*
+	 * Get's the vertex based on the Index number provided
+	*/
 	UFUNCTION(BlueprintCallable)
 		virtual FVector GetVertex(int Index);
+
+	/*
+	 * Set's the vertex based at the Index with the NewVertex
+	*/
 	UFUNCTION(BlueprintCallable)
 		virtual void SetVertex(int Index, FVector NewVertex);
+
+	/*
+	 * Returns the VertexIndex based on the FString provided
+	*/
 	UFUNCTION(BlueprintCallable)
 		virtual int VertexIndexFromString(FString VertexString);
+
+	/*
+	 * Sets the Minimum and Maximum the Verticies can move based on the XYMin and XYMax
+	*/
+	UFUNCTION(BlueprintCallable)
+		void SetVertexMinMax(FVector2D XYMin, FVector2D XYMax);
+	/*
+	 * Returns the XYMinMax Struct for the Vertex based at the Index no.
+	*/
+	UFUNCTION(BlueprintCallable)
+		FXYMinMax GetVertexMinMax(int Index);
+
 protected:
 	/*
 	 * The overall scale of the object
@@ -69,16 +119,18 @@ protected:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FLinearColor> VertexColours;
-
-
+	/*
+	 * Mapping the Face Buttons to Index Numbers
+	*/
 	UPROPERTY(EditAnywhere)
 		TMap<FString, int8> StringToVertexIndex = TMap<FString, int8>({ {"TopButton", 0}, {"LeftButton", 1}, {"RightButton", 2}, {"BottomButton", 3} });
+	/*
+	 * The Minimum and Maximum for the Verticies to move
+	*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TArray<FXYMinMax> VertexMinMax;
+
 	//TODO: Add more button combinations to this and make it up to like 8 button presses
-
-
-
-	UFUNCTION()
-		void UVRecount();
 
 	virtual void BeginPlay() override;
 };

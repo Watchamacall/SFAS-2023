@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include <STB/UIManagerComponent.h>
 #include "ProMeshSquareActor.h"
+#include "Wall.h"
 #include "STBPlayerController.generated.h"
 
 
@@ -26,13 +27,15 @@ public:
 
 	ASTBPlayerController();
 
+
+
+#pragma region Override Functions
 	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void UpdateCameraManager(float DeltaSeconds) override;
 	virtual void UpdateRotation(float DeltaTime) override;
 	virtual void Tick(float DeltaSeconds) override;
+#pragma endregion
 
-	UFUNCTION(BlueprintCallable)
-	void CreateUI();
 
 	UFUNCTION(BlueprintCallable)
 	void BeginNewGame();
@@ -45,77 +48,44 @@ public:
 	* @param State - The state which you want to show
 	*/
 	UFUNCTION(BlueprintCallable)
-	void ShowUI(ESTBGameMode State);
+		void ShowUI(ESTBGameMode State);
 
+	UFUNCTION(BlueprintCallable)
+		void CreateUI();
 	/* 
 	* Returns the Gameplay variable
 	*/
 	UFUNCTION(BlueprintCallable)
-	const UGameplay * GetGameplay() const;
+		const UGameplay * GetGameplay() const;
 
 	/* 
 	* Returns the Player's current Vector2D location
 	*/
 	UFUNCTION(BlueprintCallable)
-	const FVector2D& GetCurrentPlayerLocation() const;
+		const FVector2D& GetCurrentPlayerLocation() const;
 	
 	/* 
 	* Returns the Vector2D location of the ball
 	*/
 	UFUNCTION(BlueprintCallable)
-	FVector2D GetCurrentBallLocation() const;
+		FVector2D GetCurrentBallLocation() const;
 
 	/*
 	* Returns true if the PlayerLocation is within bounds of the CurrentBallLocation. See Gameplay->TryMove for more information.
 	*/
 	UFUNCTION(BlueprintCallable)
-	bool TryMove();
+		bool TryMove();
 	
 protected:
-
+#pragma region Override Functions
 	virtual void BeginPlay() override;	
 	virtual void SetupInputComponent() override;
-	
+#pragma endregion
 	/*
 	 * Array of all the classes UI 
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="UI")
 		TMap<TSubclassOf<UScreen>, ESTBGameMode> UI_Classes;
-	/* 
-	* The class which is the intro UMG is
-	*/
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-	//TSubclassOf<UScreen> IntroClass;
-
-	///*
-	//* The class which is the menu UMG is
-	//*/
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-	//TSubclassOf<UScreen> MenuClass;
-
-	///*
-	//* The class which is the settings UMG is
-	//*/
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-	//TSubclassOf<UScreen> SettingsClass;
-
-	///*
-	//* The class which is the playing UMG is
-	//*/
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-	//TSubclassOf<UScreen> PlayingClass;
-
-	///*
-	//* The class which is the game over UMG is
-	//*/
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-	//TSubclassOf<UScreen> GameOverClass;
-
-	/*
-	* The class which is the outro UMG is
-	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-	TSubclassOf<UScreen> OutroClass;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	float MinOrbitRadius = 60.0f;
@@ -135,11 +105,55 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	float RadiusScale = 10.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	float PlayerLocationXRange = 500.0f;
+	/*
+	 * The Single Vertex's X & Y Movement Minimum **Based on where it is originally located** (Left & Down)
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Movement Options|Single Vertex")
+		FVector2D SingleVertexXYMovementMin = FVector2D(-200.f, 0.f);
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	float PlayerLocationYRange = 300.0f;
+	/*
+	 * The Single Vertex's X & Y Movement Maximum **Based on where it is originally located** (Right & Up)
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Movement Options|Single Vertex")
+		FVector2D SingleVertexXYMovementMax = FVector2D(200.f, 200.f);
+
+	/*
+	 * The Whole Object's X & Y Movement Minimum (Left & Down)
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Movement Options|Whole Object")
+		FVector2D WholeObjectXYMovementMin = FVector2D(-200.f, 0.f);
+
+	/*
+	 * The Whole Object's X & Y Movement Maximum (Right & Up)
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Movement Options|Whole Object")
+		FVector2D WholeObjectXYMovementMax = FVector2D(200.f, 200.f);
+
+	/*
+	 * The Object which will be used to show the player
+	*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Moveable Object")
+		AProMeshSquareActor* ActorToShow;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Moveable Object")
+		FVector ActorToShowOrigin = FVector::ZeroVector;
+	/*
+	 * The speed the whole object moves at 
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Movement Options|Whole Object")
+		float WholeObjectMoveSpeed = 5.f;
+	/*
+	 * The speed a single vertex moves at
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Movement Options|Single Vertex")
+		float VertexMoveSpeed = 5.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wall")
+		AWall* WallComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wall")
+		FVector WallInitialVector = FVector::ZeroVector;
+
+
 	
 private:
 
@@ -154,7 +168,7 @@ private:
 	* Sets up the Screen, based on the TMap UI_Classes, calls SetupScreen's brother
 	*/
 	void SetupScreen();
-
+#pragma region Left Axis Functions
 	/*
 	* Moves the Player on the X axis based on the @param Value
 	* @param Value - The value of movement (Ranges from -1 to 1)
@@ -168,49 +182,87 @@ private:
 	*/
 	UFUNCTION()
 	void UpDown(float Value);
-
+#pragma endregion
+	/*
+	 * Updates a Vertex from the ActorToShow variable and sends it across to the object
+	*/
 	void UpdateVertex(char VectorName, int8 VertexIndex, float Value);
-	
+#pragma region Button Functions
+	/*
+	 * The Top Button press (Y / Triangle)
+	*/
 	UFUNCTION()
 	void TopButtonPress();
 
+	/*
+	 * The Left Button press (X / Square)
+	*/
 	UFUNCTION()
 	void LeftButtonPress();
 
+	/*
+	 * The Right Button press (B / Circle)
+	*/
 	UFUNCTION()
 	void RightButtonPress();
 
+	/*
+	 * The Bottom Button press (A / Cross)
+	*/
 	UFUNCTION()
 	void BottomButtonPress();
 
+	/*
+	 * The Top Button Release (Y / Triangle)
+	*/
 	UFUNCTION()
 	void TopButtonRelease();
 
+	/*
+	 * The Left Button Release (X / Square)
+	*/
 	UFUNCTION()
 	void LeftButtonRelease();
 
+	/*
+	 * The Right Button Release (B / Circle)
+	*/
 	UFUNCTION()
 	void RightButtonRelease();
 
+	/*
+	 * The Bottom Button Release (A / Cross)
+	*/
 	UFUNCTION()
 	void BottomButtonRelease();
-
+#pragma endregion
+	/*
+	 * The class which holds all the logic for the game 
+	*/
 	UPROPERTY(VisibleAnywhere)
 	UGameplay * Gameplay;
 	
+	/*
+	 * Array holding the locations in memory where the Widgets are
+	*/
 	UPROPERTY(VisibleAnywhere, Category = "UI")
 	TArray<UScreen*> Widgets;
 
+	/*
+	 * The current location in the game world where the player is
+	*/
 	UPROPERTY(VisibleAnywhere)
 	FVector2D CurrentPlayerLocation;	
 	
+#pragma region Orbit Variables
 	FVector LastOrbitPawnLocation;
 	FRotator LastOrbitPawnViewRotation;
 	FVector OrbitPivot = FVector(0.0f, 0.0f, 100.0f);
 	float OrbitRadius = 200.0f;
+#pragma endregion
 
-	UPROPERTY(VisibleAnywhere)
-	AProMeshSquareActor* ActorToShow;
+	float CurrentTimeWallInMotion = 0.f;
+
 
 #pragma region ButtonBooleans
 	bool TopButton;
@@ -221,8 +273,9 @@ private:
 	/*
 	 * The current state the game is in
 	*/
-	ESTBGameMode CurrentState;
-
+	UPROPERTY(VisibleAnywhere)
+	TEnumAsByte<ESTBGameMode> CurrentState;
+#pragma region Input Names
 	static const FString TopButtonActionName;
 	static const FString LeftButtonActionName;
 	static const FString RightButtonActionName;
@@ -233,5 +286,5 @@ private:
 	static const FString RightStickYAxisName;
 	static const FString LeftTriggerAxisName;
 	static const FString RightTriggerAxisName;
-	static const FString TopButtonAxisName;
+#pragma endregion
 };

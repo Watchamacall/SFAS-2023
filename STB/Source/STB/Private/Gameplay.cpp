@@ -3,7 +3,7 @@
 UGameplay::UGameplay()
 {
 	CurrentLevel = 0;
-	CurrentLives = 0;	
+	CurrentLives = 0;
 }
 
 void UGameplay::SetLevels(AProgressionData* Data)
@@ -15,7 +15,6 @@ void UGameplay::StartNewGame()
 {
 	CurrentLevel = 0;
 	CurrentLives = StartingLives;
-	//TODO: Add creating object with x sides here, including linking up and displaying with a texture
 }
 
 void UGameplay::NextLevel()
@@ -26,19 +25,16 @@ void UGameplay::NextLevel()
 	{
 		const FProgressionLevelData* LevelData = Levels->SpawnLevel(CurrentLevel);
 
-		if(LevelData)
+		if (LevelData)
 		{
 			CurrentBallBounds = LevelData->BallBounds;
 			CurrentRequiredDistance = LevelData->RequiredDistance;
-				if (ActorToShow->BaseMesh)
-				{
-					ActorToShow->BaseMesh = nullptr;
-				}
-				ActorToShow->BaseMesh = UProGenMeshBase::CreateMeshBase(ActorToShow, LevelData->AmountOfSidesOnShape, FVector::OneVector);
-				ActorToShow->BaseMesh->SetWorldLocation(FVector(0.f, 0.f, 60.f));
-			
+
+			CurrentTimeUntilImpact = LevelData->TimeTillWallHit;
+			ActorToShow->UpdateEvent(LevelData->AmountOfSidesOnShape);
+
 			ChooseRandomBallLocation();
-		}			
+		}
 	}
 }
 
@@ -55,6 +51,11 @@ const FBoxSphereBounds& UGameplay::GetCurrentBallBounds() const
 const FVector& UGameplay::GetBallLocation() const
 {
 	return BallLocation;
+}
+
+int UGameplay::GetTimeToImpact() const
+{
+	return CurrentTimeUntilImpact;
 }
 
 int UGameplay::GetLevel() const
@@ -89,9 +90,10 @@ bool UGameplay::TryMove(const FVector2D& PlayerGuess, const FVector2D& BallLocat
 
 	return bWin;
 }
-//TODO: Change this function to instead set the points of an object
+//TODO: Change this function to instead set the points of an object and show this object if possible.
 void UGameplay::ChooseRandomBallLocation()
 {
+	
 	BallLocation = CurrentBallBounds.Origin;
 	BallLocation.X += FMath::RandRange( -CurrentBallBounds.BoxExtent.X, CurrentBallBounds.BoxExtent.X );
 	BallLocation.Y += FMath::RandRange( -CurrentBallBounds.BoxExtent.Y, CurrentBallBounds.BoxExtent.Y );

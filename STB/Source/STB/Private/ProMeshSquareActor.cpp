@@ -9,25 +9,20 @@ AProMeshSquareActor::AProMeshSquareActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Scene Component"));
-}
-//AProMeshSquareActor::AProMeshSquareActor(UProGenMeshBase* Shape)
-//{
-//	PrimaryActorTick.bCanEverTick = true;
-//	RootComponent = NewObject<UProGenMeshBase>(this, Shape->GetClass());
-//}
-
-// Called when the game starts or when spawned
-void AProMeshSquareActor::BeginPlay()
-{
-	Super::BeginPlay();
-	//BaseMesh->CreateMesh();
+	//TODO: Change this name as it is inappropriate, however for the time it was required
+	BaseMesh = CreateDefaultSubobject<UProGenMeshBase>(TEXT("Please Work For Fuck's Sake!"));
+	RootComponent = BaseMesh;
 }
 
-// Called every frame
-void AProMeshSquareActor::Tick(float DeltaTime)
+void AProMeshSquareActor::StartEvent_Implementation()
 {
-	Super::Tick(DeltaTime);
 
+}
+void AProMeshSquareActor::UpdateEvent_Implementation(int SidesOnShape)
+{}
+
+void AProMeshSquareActor::NewProceduralMeshObject()
+{
+	BaseMesh = CreateDefaultSubobject<UProGenMeshBase>(TEXT("New Mesh Exist"));
 }
 
