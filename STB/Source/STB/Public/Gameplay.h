@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "ProgressionData.h"
 #include "ProMeshSquareActor.h"
+#include "DependancyRemover.h"
 #include "Gameplay.generated.h"
 
 UCLASS()
@@ -68,7 +69,11 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable)
 	bool GetWin() const;
-	
+
+	UFUNCTION(BlueprintCallable)
+		AActor* GetOwner();
+	UFUNCTION(BlueprintCallable)
+		void SetOwner(AActor* NewOwner);
 	/* 
 	* Returns true if @param PlayerGuess is within range to @param BallLocation2D
 	* @param PlayerGuess - The vector in which the Player's location is
@@ -140,4 +145,6 @@ private:
 	*/
 	UPROPERTY(VisibleAnywhere)
 		bool bWin;	
+
+	AActor* Owner;
 };

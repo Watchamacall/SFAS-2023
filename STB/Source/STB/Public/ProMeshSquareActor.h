@@ -21,7 +21,8 @@ public:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Actual Mesh")
 		UProGenMeshBase* BaseMesh;
-	/*If BaseMesh is showing None in Editor, Comment out ProMeshSquareActor.cpp:12 (BaseMesh=...); Compile; Uncomment; Compile*/
+	/*If BaseMesh is showing None in Editor, Comment out "BaseMesh = CreateDefaultSubobject<UProGenMeshBase>(TEXT("Please Work For Fuck's Sake!"));" in ProMeshSquareActor.cpp::AProMeshSquareActor()
+ Compile; Uncomment; Compile*/
 
 	/*
 	 * Event to be called in Blueprints once we find this object in the World
@@ -32,7 +33,7 @@ public:
 	 * Event called to update the Shape based on the amount of sides it has
 	*/
 	UFUNCTION(BlueprintNativeEvent)
-		void UpdateEvent(int SidesOnShape);
+		void UpdateEvent(int SidesOnShape, UStaticMesh* ColliderMesh);
 
 	UFUNCTION()
 		void NewProceduralMeshObject();

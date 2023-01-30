@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ProceduralMeshComponent.h"
+#include "StaticVertexCollider.h"
 #include "ProGenMeshBase.generated.h"
 
 USTRUCT(BlueprintType)
@@ -35,7 +36,7 @@ class STB_API UProGenMeshBase : public UProceduralMeshComponent
 public:
 
 	UFUNCTION(BlueprintCallable)
-		virtual void UpdateAllComponents(FVector ObjectScale, TArray<int32> Triangles, TArray<FVector> Verticies, TArray<FVector> Normals, TArray<FVector> UV0, TArray<FProcMeshTangent> Tangents, TArray<FLinearColor> VertexColours);
+		virtual void UpdateAllComponents(FVector ObjectScale, TArray<int32> Triangles, TArray<FVector> Verticies, TArray<UStaticVertexCollider*> NewVertexColliders, TArray<FVector> Normals, TArray<FVector> UV0, TArray<FProcMeshTangent> Tangents, TArray<FLinearColor> VertexColours);
 	/*
 	 * Creates the initial mesh based on the values first inputted in the Blueprint 
 	*/
@@ -45,15 +46,19 @@ public:
 	 * Updates the mesh's variables based on the number of sides the shape will be, calculates Tries and everything
 	*/
 	UFUNCTION(BlueprintCallable)
-		virtual void UpdateMesh(int SidesOnShape);
+		virtual void UpdateMesh(int SidesOnShape, UStaticMesh* ColliderMesh);
 	/*
 	 * Updates the mesh internally, would be overriding but Unreal doesn't like same named functions
 	*/
 	UFUNCTION(BlueprintCallable)
 		virtual void UpdateMeshInternally();
 
-	UFUNCTION()
-		void UVRecount();
+	/*
+	 * Sets the Vertex positions to randomised values
+	*/
+	UFUNCTION(BlueprintCallable)
+		virtual void SetRandomVertexLocations();
+
 	/*
 	 * Get's the vertex based on the Index number provided
 	*/
@@ -87,27 +92,32 @@ protected:
 	/*
 	 * The overall scale of the object
 	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		FVector ObjectScale;
 	/*
 	 * The tries of the object, count must be a multiple of 3
 	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TArray<int32> Triangles;
 	/*
 	 * The verticies of the object, can be any number
 	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TArray<FVector> Verticies;
+	/*
+	 * Holds the  
+	*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TArray<UStaticVertexCollider*> VertexColliders;
 	/*
 	 * This sorta exists
 	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TArray<FVector> Normals;
 	/*
 	 * UV is the map for texturing, more complex objects will have more precise numbers, must match the number of verticies
 	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TArray<FVector2D> UV0;
 	/*
 	 * This sorta exists
@@ -117,7 +127,7 @@ protected:
 	/*
 	 * The colour of the objects Verticies
 	*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<FLinearColor> VertexColours;
 	/*
 	 * Mapping the Face Buttons to Index Numbers
@@ -129,8 +139,12 @@ protected:
 	*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TArray<FXYMinMax> VertexMinMax;
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		FVector VertexColliderScale = FVector(.05f, .05f, .05f);
 	//TODO: Add more button combinations to this and make it up to like 8 button presses
 
 	virtual void BeginPlay() override;
+private:
+		UFUNCTION()
+			void UVRecount();
 };

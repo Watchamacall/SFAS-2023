@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Screen.h"
+#include "../STBPawn.h"
 #include "PlayingScreen.generated.h"
 
 
@@ -53,7 +54,7 @@ private:
 	int TargetImageIndex;	
 
 	UPROPERTY(VisibleAnywhere)
-	int GuessImageIndex;	
+	int GuessImageIndex;
 	
 	UPROPERTY(VisibleAnywhere)
 	int LevelTextIndex;

@@ -81,11 +81,34 @@ void UPlayingScreen::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 				GuessSlot->SetPosition(GuessLocation);
 			}
 		}
-	}	
+	}
 }
 
 void UPlayingScreen::Select_Implementation()
 {
+	if (IsValid(PlayerController))
+	{
+		FVector2D GuessPosition = Cast<UCanvasPanelSlot>(Images[GuessImageIndex]->Slot)->GetPosition();
+		FVector WorldLocation;
+		FVector WorldDirection;
+		
+		//Since the GuessPosition origin is the center of the screen whilst the Deproject origin is top left, add the Viewport * .5f to center it and get accurate direction
+		int32 ViewportSizeX, ViewportSizeY;
+		PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY);
+
+		//TODO: Fix the Direction the ray goes, currently moves too far in all directions
+		if (PlayerController->DeprojectScreenPositionToWorld(GuessPosition.X + (ViewportSizeX * .5f), GuessPosition.Y + (ViewportSizeY * .5f), WorldLocation, WorldDirection))
+		{
+			FHitResult Hit;
+			if (GetWorld()->LineTraceSingleByChannel(Hit, WorldLocation, WorldLocation + (WorldDirection * 5000.f), ECollisionChannel::ECC_WorldDynamic))
+			{
+				//TODO: Add a variable which changes here, maybe just an int that relates to the LeftRight and UpDown of the PlayerController and allows for the movement of the Vertex (In the ProGenMeshBase Class) until Release where that variable is changed to -1 or something, saves having to rework this entire thing
+				DrawDebugLine(GetWorld(), WorldLocation, WorldLocation + (WorldDirection * 5000.f), FColor::Green, false, 10.f);
+				FName ComponentName = Hit.GetComponent()->GetFName();
+				UE_LOG(LogTemp, Display, TEXT("Component is: %s"), *ComponentName.ToString());
+			}
+		}
+	}
 	//We are not guessing anymore so this isn't needed
 	
 	//if(PlayingState == EPlayingState::Guessing)

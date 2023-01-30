@@ -31,8 +31,14 @@ void UGameplay::NextLevel()
 			CurrentRequiredDistance = LevelData->RequiredDistance;
 
 			CurrentTimeUntilImpact = LevelData->TimeTillWallHit;
-			ActorToShow->UpdateEvent(LevelData->AmountOfSidesOnShape);
+			
 
+			if (ASTBPlayerController* player = Cast<ASTBPlayerController>(Owner))
+			{
+				ActorToShow->UpdateEvent(LevelData->AmountOfSidesOnShape, player->GetColliderMesh());
+				FXYMinMax SingleVertBounds = player->GetSingleVertMinMax();
+				ActorToShow->BaseMesh->SetVertexMinMax(SingleVertBounds.XYMin, SingleVertBounds.XYMax);
+			}
 			ChooseRandomBallLocation();
 		}
 	}
@@ -73,6 +79,16 @@ bool UGameplay::GetWin() const
 	return bWin;
 }
 
+AActor* UGameplay::GetOwner()
+{
+	return Owner;
+}
+
+void UGameplay::SetOwner(AActor* NewOwner)
+{
+	Owner = NewOwner;
+}
+
 bool UGameplay::TryMove(const FVector2D& PlayerGuess, const FVector2D& BallLocation2D)
 {
 	bWin = false;
@@ -90,10 +106,10 @@ bool UGameplay::TryMove(const FVector2D& PlayerGuess, const FVector2D& BallLocat
 
 	return bWin;
 }
-//TODO: Change this function to instead set the points of an object and show this object if possible.
+//TODO: Change this function to instead set the points of an object.
 void UGameplay::ChooseRandomBallLocation()
 {
-	
+	ActorToShow->BaseMesh->SetRandomVertexLocations();
 	BallLocation = CurrentBallBounds.Origin;
 	BallLocation.X += FMath::RandRange( -CurrentBallBounds.BoxExtent.X, CurrentBallBounds.BoxExtent.X );
 	BallLocation.Y += FMath::RandRange( -CurrentBallBounds.BoxExtent.Y, CurrentBallBounds.BoxExtent.Y );

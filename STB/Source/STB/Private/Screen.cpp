@@ -98,26 +98,50 @@ void UScreen::Show(bool bShow)
 #pragma region Event Implementation
 void UScreen::Select_Implementation()
 {
+	if (State != EScreenState::On)
+	{
+		return;
+	}
 }
 
 void UScreen::Back_Implementation()
 {
+	if (State != EScreenState::On)
+	{
+		return;
+	}
 }
 
 void UScreen::Alt1_Implementation()
 {
+	if (State != EScreenState::On)
+	{
+		return;
+	}
 }
 
 void UScreen::Alt2_Implementation()
 {
+	if (State != EScreenState::On)
+	{
+		return;
+	}
 }
 
 void UScreen::OnShown_Implementation()
 {
+	if (State != EScreenState::On)
+	{
+		return;
+	}
 }
 
 void UScreen::OnHidden_Implementation()
 {
+	if (State != EScreenState::On)
+	{
+		return;
+	}
 }
 #pragma endregion
 

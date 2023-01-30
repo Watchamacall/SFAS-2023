@@ -54,6 +54,7 @@ void ASTBPlayerController::BeginPlay()
 
 	if (IsValid(Gameplay))
 	{
+		Gameplay->SetOwner(this);
 		//Getting the Actor within the map since UProceduralMeshComponent is annoying and won't work if spawned in during runtime, at least I couldn't get it to work
 		const TActorIterator<AProMeshSquareActor> SquareTest(GetWorld());
 		if (SquareTest)
@@ -90,18 +91,14 @@ void ASTBPlayerController::Tick(float DeltaSeconds)
 		//TODO: Show where the current points are on the wall as it comes closer, allowing for precision
 
 		//TODO: Add the bonus content
+		
+		//REMOVE THIS BEFORE PUBLISHING
 		const auto Bounds = Gameplay->GetCurrentBallBounds();
 		DrawDebugBox(GetWorld(), Bounds.Origin, Bounds.BoxExtent, FColor::Green, false, 0.2f, SDPG_Foreground, 1.0f);		
 		DrawDebugSphere(GetWorld(), Gameplay->GetBallLocation(), 20.0f, 10.0f, FColor::Red, false, 0.2f, SDPG_Foreground, 1.0f);
 
-		//TODO: Finish this part of the function off and make the wall not move at the speed of sound
-		//Moves x amount in y time, move that much times deltaTime (x/y)*DT;
-		//TODO: Set the Variable InitialWallVector
-		FVector CurrentWallLocation = WallComponent->GetActorLocation();
-		float Distance = FVector::Dist(ActorToShow->BaseMesh->GetComponentLocation(), WallInitialVector);
-		FVector NewWallLocation = FVector(CurrentWallLocation.X - (Distance * (Gameplay->GetTimeToImpact() * DeltaSeconds)), CurrentWallLocation.Y, CurrentWallLocation.Z);
-		WallComponent->SetActorLocation(NewWallLocation);
 	}
+
 }
 
 void ASTBPlayerController::SetupInputComponent()
@@ -166,14 +163,10 @@ void ASTBPlayerController::BeginNewGame()
 		
 		CurrentTimeWallInMotion = 0.f;
 
-		if (WallComponent)
-		{
-			WallComponent->SetActorLocation(WallInitialVector);
-		}
-
 		Gameplay->StartNewGame();
 		Gameplay->NextLevel();
-		ActorToShow->BaseMesh->SetVertexMinMax(SingleVertexXYMovementMin, SingleVertexXYMovementMax); //Leave this here, will cause chaos otherwise
+
+		WallComponent->StartMovingWall(WallInitialVector, Gameplay->GetTimeToImpact(), FVector::Dist(ActorToShow->BaseMesh->GetComponentLocation(), WallInitialVector));
 	}
 }
 
@@ -277,6 +270,14 @@ FVector2D ASTBPlayerController::GetCurrentBallLocation() const
 	
 	return ScreenLocation - (ViewportSize * 0.5f);
 }
+FXYMinMax ASTBPlayerController::GetSingleVertMinMax()
+{
+	return FXYMinMax(SingleVertexXYMovementMin, SingleVertexXYMovementMax);
+}
+UStaticMesh* ASTBPlayerController::GetColliderMesh()
+{
+	return ColliderMesh;
+}
 #pragma endregion
 #pragma region Movement Functions
 void ASTBPlayerController::LeftRight(float Value)
@@ -284,38 +285,40 @@ void ASTBPlayerController::LeftRight(float Value)
 	if(CurrentState == ESTBGameMode::Playing)
 	{
 #pragma region Button Movement
-		if (TopButton)
-		{
-			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(TopButtonActionName);
-			UpdateVertex('X', VertexIndex, Value);
-		}
-		if (LeftButton)
-		{
-			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(LeftButtonActionName);
-			UpdateVertex('X', VertexIndex, Value);
-		}
-		if (RightButton)
-		{
-			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(RightButtonActionName);
-			UpdateVertex('X', VertexIndex, Value);
-		}
-		if (BottomButton)
-		{
-			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(BottomButtonActionName);
-			UpdateVertex('X', VertexIndex, Value);
-		}
-		if (TopButton || LeftButton || RightButton || BottomButton) //Exists so buttons can be pressed together and moved at the same time
-		{
-			return;
-		}
+		//if (TopButton)
+		//{
+		//	int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(TopButtonActionName);
+		//	UpdateVertex('X', VertexIndex, Value);
+		//}
+		//if (LeftButton)
+		//{
+		//	int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(LeftButtonActionName);
+		//	UpdateVertex('X', VertexIndex, Value);
+		//}
+		//if (RightButton)
+		//{
+		//	int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(RightButtonActionName);
+		//	UpdateVertex('X', VertexIndex, Value);
+		//}
+		//if (BottomButton)
+		//{
+		//	int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(BottomButtonActionName);
+		//	UpdateVertex('X', VertexIndex, Value);
+		//}
+		//if (TopButton || LeftButton || RightButton || BottomButton) //Exists so buttons can be pressed together and moved at the same time
+		//{
+		//	return;
+		//}
 		//If none of the buttons have been pressed
-		FVector CurrentLocation = ActorToShow->BaseMesh->GetComponentLocation();
-		CurrentLocation = FVector(CurrentLocation.X , CurrentLocation.Y + ((Value * WholeObjectMoveSpeed) * GetWorld()->GetDeltaSeconds()), CurrentLocation.Z); //Set on Y axis due to the X axis being front
-		ActorToShow->BaseMesh->SetWorldLocation(CurrentLocation);
 #pragma endregion
+		//FVector CurrentLocation = ActorToShow->BaseMesh->GetComponentLocation();
+		//CurrentLocation = FVector(CurrentLocation.X , CurrentLocation.Y + ((Value * WholeObjectMoveSpeed) * GetWorld()->GetDeltaSeconds()), CurrentLocation.Z); //Set on Y axis due to the X axis being front
+		//ActorToShow->BaseMesh->SetWorldLocation(CurrentLocation);
 
-		//DEBUG
-		//CurrentPlayerLocation.X = FMath::Clamp(CurrentPlayerLocation.X + Value, -SingleVertexXMovement, SingleVertexXMovement);
+		//TODO: Add some code here for a condition for a variable and if not that variable, get the Vertex and start moving it based on the values (Use what is in the region Button Movement[FunctionCall])
+
+		//Cursor Movement
+		CurrentPlayerLocation.X = FMath::Clamp(CurrentPlayerLocation.X + Value, CursorXYMin.X, CursorXYMax.X);
 	}
 }
 
@@ -324,37 +327,37 @@ void ASTBPlayerController::UpDown(float Value)
 	if(CurrentState == ESTBGameMode::Playing)
 	{
 #pragma region Button Movement
-		if (TopButton)
-		{
-			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(TopButtonActionName);
-			UpdateVertex('Z', VertexIndex, Value);
-			return;
-		}
-		if (LeftButton)
-		{
-			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(LeftButtonActionName);
-			UpdateVertex('Z', VertexIndex, Value);
-			return;
-		}
-		if (RightButton)
-		{
-			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(RightButtonActionName);
-			UpdateVertex('Z', VertexIndex, Value);
-			return;
-		}
-		if (BottomButton)
-		{
-			int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(BottomButtonActionName);
-			UpdateVertex('Z', VertexIndex, Value);
-			return;
-		}
+		//if (TopButton)
+		//{
+		//	int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(TopButtonActionName);
+		//	UpdateVertex('Z', VertexIndex, Value);
+		//	return;
+		//}
+		//if (LeftButton)
+		//{
+		//	int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(LeftButtonActionName);
+		//	UpdateVertex('Z', VertexIndex, Value);
+		//	return;
+		//}
+		//if (RightButton)
+		//{
+		//	int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(RightButtonActionName);
+		//	UpdateVertex('Z', VertexIndex, Value);
+		//	return;
+		//}
+		//if (BottomButton)
+		//{
+		//	int8 VertexIndex = ActorToShow->BaseMesh->VertexIndexFromString(BottomButtonActionName);
+		//	UpdateVertex('Z', VertexIndex, Value);
+		//	return;
+		//}
 #pragma endregion
-		FVector CurrentLocation = ActorToShow->BaseMesh->GetComponentLocation();
-		CurrentLocation = FVector(CurrentLocation.X, CurrentLocation.Y, CurrentLocation.Z + ((Value * WholeObjectMoveSpeed) * GetWorld()->GetDeltaSeconds()));
-		ActorToShow->BaseMesh->SetWorldLocation(CurrentLocation);
+		//FVector CurrentLocation = ActorToShow->BaseMesh->GetComponentLocation();
+		//CurrentLocation = FVector(CurrentLocation.X, CurrentLocation.Y, CurrentLocation.Z + ((Value * WholeObjectMoveSpeed) * GetWorld()->GetDeltaSeconds()));
+		//ActorToShow->BaseMesh->SetWorldLocation(CurrentLocation);
 		
-		//DEBUG
-		//CurrentPlayerLocation.Y = FMath::Clamp(CurrentPlayerLocation.Y + Value, -SingleVertexYMovement, SingleVertexYMovement);
+		//Cursor Movement
+		CurrentPlayerLocation.Y = FMath::Clamp(CurrentPlayerLocation.Y - Value, CursorXYMin.Y, CursorXYMax.Y);
 	}
 }
 
@@ -384,7 +387,7 @@ void ASTBPlayerController::UpdateVertex(char VectorName, int8 VertexIndex, float
 #pragma region Button Presses
 void ASTBPlayerController::TopButtonPress()
 {
-	if(const int Index = static_cast<int>(CurrentState.GetValue()); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
+	if(const int Index = static_cast<int>(CurrentState); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
 	{
 		Widgets[Index]->Alt2();
 	}
@@ -394,7 +397,7 @@ void ASTBPlayerController::TopButtonPress()
 
 void ASTBPlayerController::LeftButtonPress()
 {
-	if(const int Index = static_cast<int>(CurrentState.GetValue()); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
+	if(const int Index = static_cast<int>(CurrentState); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
 	{
 		Widgets[Index]->Alt1();
 	}
@@ -403,7 +406,7 @@ void ASTBPlayerController::LeftButtonPress()
 
 void ASTBPlayerController::RightButtonPress()
 {
-	if(const int Index = static_cast<int>(CurrentState.GetValue()); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
+	if(const int Index = static_cast<int>(CurrentState); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
 	{
 		Widgets[Index]->Back();
 	}
@@ -412,7 +415,7 @@ void ASTBPlayerController::RightButtonPress()
 
 void ASTBPlayerController::BottomButtonPress()
 {
-	if(const int Index = static_cast<int>(CurrentState.GetValue()); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
+	if(const int Index = static_cast<int>(CurrentState); Index >= 0 && Index < static_cast<int>(ESTBGameMode::NumModes))
 	{
 		Widgets[Index]->Select();
 	}	
@@ -438,6 +441,7 @@ void ASTBPlayerController::RightButtonRelease()
 void ASTBPlayerController::BottomButtonRelease()
 {
 	BottomButton = false;
-	UE_LOG(LogTemp, Display, TEXT("Released Bottom Button"))
+	UE_LOG(LogTemp, Display, TEXT("Released Bottom Button"));
+	//TODO: Include a change to a variable here based on the CurrentState and change it to -1 (Works in Tandem with the PlayingScreen Class
 }
 #pragma endregion

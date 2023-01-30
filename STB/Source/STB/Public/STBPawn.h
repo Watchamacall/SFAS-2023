@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/DefaultPawn.h"
-//#include "SquareShape.h"
+#include <Camera/CameraComponent.h>
 #include "STBPawn.generated.h"
+
 
 UCLASS()
 class STB_API ASTBPawn : public APawn
@@ -16,13 +17,6 @@ public:
 
 	ASTBPawn();
 
+	UCameraComponent* PrimaryCamera;
 
-	//virtual void BeginPlay() override;
-
-	//virtual void PostLoad() override;
-
-	//virtual void PostActorCreated() override;
-
-	//UPROPERTY(VisibleAnywhere)
-	//	USquareShape* SquareTest;
 };

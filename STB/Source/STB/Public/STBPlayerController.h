@@ -49,7 +49,9 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable)
 		void ShowUI(ESTBGameMode State);
-
+	/*
+	 * Creates the UI
+	*/
 	UFUNCTION(BlueprintCallable)
 		void CreateUI();
 	/* 
@@ -57,24 +59,33 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable)
 		const UGameplay * GetGameplay() const;
-
 	/* 
 	* Returns the Player's current Vector2D location
 	*/
 	UFUNCTION(BlueprintCallable)
 		const FVector2D& GetCurrentPlayerLocation() const;
-	
 	/* 
 	* Returns the Vector2D location of the ball
 	*/
 	UFUNCTION(BlueprintCallable)
 		FVector2D GetCurrentBallLocation() const;
-
+	/*
+	 * Returns the Single Verticies Min and Max values it can move
+	*/
+	UFUNCTION(BlueprintCallable)
+		FXYMinMax GetSingleVertMinMax();
+	/*
+	 * Returms the Static Mesh the Vertex Colliders will use
+	*/
+	UFUNCTION(BlueprintCallable)
+		UStaticMesh* GetColliderMesh();
 	/*
 	* Returns true if the PlayerLocation is within bounds of the CurrentBallLocation. See Gameplay->TryMove for more information.
 	*/
 	UFUNCTION(BlueprintCallable)
 		bool TryMove();
+
+
 	
 protected:
 #pragma region Override Functions
@@ -84,7 +95,7 @@ protected:
 	/*
 	 * Array of all the classes UI 
 	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="UI")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="UI|General")
 		TMap<TSubclassOf<UScreen>, ESTBGameMode> UI_Classes;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -105,6 +116,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	float RadiusScale = 10.0f;
 
+	/*
+	 * The Minimum and Maximum XY values for the Cursor
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI|Cursor")
+		FVector2D CursorXYMin = FVector2D::ZeroVector;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI|Cursor")
+		FVector2D CursorXYMax = FVector2D::ZeroVector;
 	/*
 	 * The Single Vertex's X & Y Movement Minimum **Based on where it is originally located** (Left & Down)
 	*/
@@ -132,10 +150,19 @@ protected:
 	/*
 	 * The Object which will be used to show the player
 	*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Moveable Object")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Generated Mesh")
 		AProMeshSquareActor* ActorToShow;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Moveable Object")
+
+	/*
+	 * Where the Generated Mesh will call it's origin
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Generated Mesh")
 		FVector ActorToShowOrigin = FVector::ZeroVector;
+	/*
+	 * What Static Mesh the Vertex Colliders will use
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Generated Mesh")
+		UStaticMesh* ColliderMesh;
 	/*
 	 * The speed the whole object moves at 
 	*/
@@ -255,8 +282,10 @@ private:
 	FVector2D CurrentPlayerLocation;	
 	
 #pragma region Orbit Variables
-	FVector LastOrbitPawnLocation;
-	FRotator LastOrbitPawnViewRotation;
+	UPROPERTY(EditAnywhere, Category="Camera")
+		FVector LastOrbitPawnLocation;
+	UPROPERTY(EditAnywhere, Category = "Camera")
+		FRotator LastOrbitPawnViewRotation;
 	FVector OrbitPivot = FVector(0.0f, 0.0f, 100.0f);
 	float OrbitRadius = 200.0f;
 #pragma endregion
@@ -273,8 +302,8 @@ private:
 	/*
 	 * The current state the game is in
 	*/
-	UPROPERTY(VisibleAnywhere)
-	TEnumAsByte<ESTBGameMode> CurrentState;
+	ESTBGameMode CurrentState;
+
 #pragma region Input Names
 	static const FString TopButtonActionName;
 	static const FString LeftButtonActionName;
