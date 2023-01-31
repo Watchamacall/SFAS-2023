@@ -28,16 +28,22 @@ void UGameplay::NextLevel()
 		if (LevelData)
 		{
 			CurrentBallBounds = LevelData->BallBounds;
-			CurrentRequiredDistance = LevelData->RequiredDistance;
+			CurrentTolerance = LevelData->Tolerance;
 
 			CurrentTimeUntilImpact = LevelData->TimeTillWallHit;
 			
-
 			if (ASTBPlayerController* player = Cast<ASTBPlayerController>(Owner))
 			{
-				ActorToShow->UpdateEvent(LevelData->AmountOfSidesOnShape, player->GetColliderMesh());
+				//Player Controlled Mesh Compilation
+
 				FXYMinMax SingleVertBounds = player->GetSingleVertMinMax();
+
+				ActorToShow->UpdateEvent(LevelData->AmountOfSidesOnShape, player->GetColliderMesh());
 				ActorToShow->BaseMesh->SetVertexMinMax(SingleVertBounds.XYMin, SingleVertBounds.XYMax);
+
+				//Wall Controlled Mesh Compilation
+				WallActorToShow->UpdateEvent(LevelData->AmountOfSidesOnShape, player->GetColliderMesh());
+				WallActorToShow->BaseMesh->SetVertexMinMax(SingleVertBounds.XYMin, SingleVertBounds.XYMax);
 			}
 			ChooseRandomBallLocation();
 		}
@@ -89,27 +95,35 @@ void UGameplay::SetOwner(AActor* NewOwner)
 	Owner = NewOwner;
 }
 
-bool UGameplay::TryMove(const FVector2D& PlayerGuess, const FVector2D& BallLocation2D)
+bool UGameplay::TryMove(UProGenMeshBase* PlayerPoints, UProGenMeshBase* ActualPoints)
 {
+	//TODO: Add a scoring system here based on the gap between the points, outside tolerance = loss otherwise add score
 	bWin = false;
-	const float Distance = FVector2D::Distance(BallLocation2D, PlayerGuess);
 
-	if(Distance <= CurrentRequiredDistance)
+	for (size_t CurrentVertex = 0; CurrentVertex < PlayerPoints->GetNumSides(); CurrentVertex++)
 	{
-		CurrentLevel = FMath::Clamp(CurrentLevel + 1, 0, Levels->GetNumLevels());
-		bWin = true;
+		const float DistanceBetween = FVector::Dist(PlayerPoints->GetVertex(CurrentVertex), ActualPoints->GetVertex(CurrentVertex));
+		if (DistanceBetween <= CurrentTolerance)
+		{
+			bWin = true;
+		}
+		else
+		{
+			bWin = false;
+			break;
+		}
 	}
-	else
-	{
-		CurrentLives = FMath::Clamp(CurrentLives - 1, 0, 3);
-	}
+
+	bWin ? CurrentLevel = FMath::Clamp(CurrentLevel + 1, 0, Levels->GetNumLevels()) : CurrentLives = FMath::Clamp(CurrentLives - 1, 0, StartingLives);
 
 	return bWin;
 }
-//TODO: Change this function to instead set the points of an object.
+
 void UGameplay::ChooseRandomBallLocation()
 {
-	ActorToShow->BaseMesh->SetRandomVertexLocations();
+	WallActorToShow->BaseMesh->SetRandomVertexLocations();
+	WallActorToShow->BaseMesh->UpdateMeshInternally();
+
 	BallLocation = CurrentBallBounds.Origin;
 	BallLocation.X += FMath::RandRange( -CurrentBallBounds.BoxExtent.X, CurrentBallBounds.BoxExtent.X );
 	BallLocation.Y += FMath::RandRange( -CurrentBallBounds.BoxExtent.Y, CurrentBallBounds.BoxExtent.Y );

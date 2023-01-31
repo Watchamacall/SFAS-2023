@@ -69,9 +69,14 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable)
 	bool GetWin() const;
-
+	/*
+	 * Get the owner of this object
+	*/
 	UFUNCTION(BlueprintCallable)
 		AActor* GetOwner();
+	/*
+	 * Set the owner of this object 
+	*/
 	UFUNCTION(BlueprintCallable)
 		void SetOwner(AActor* NewOwner);
 	/* 
@@ -80,15 +85,23 @@ public:
 	* @param BallLocation2D - The vector where the ball is located
 	*/
 	UFUNCTION(BlueprintCallable)
-	bool TryMove(const FVector2D& PlayerGuess, const FVector2D& BallLocation2D);
+	bool TryMove(UProGenMeshBase* PlayerPoints, UProGenMeshBase* ActualPoints);
 	/* 
 	* Randomises the ball's location based on the bounds
 	*/
 	UFUNCTION(BlueprintCallable)
 	void ChooseRandomBallLocation();
 
+	/*
+	 * Pointer leading to the Actor which shows the player's mesh
+	*/
 	UPROPERTY(VisibleAnywhere)
 		AProMeshSquareActor* ActorToShow;
+	/*
+	 * Pointer leading to the Actor which shows the wall's mesh
+	*/
+	UPROPERTY(VisibleAnywhere)
+		AProMeshSquareActor* WallActorToShow;
 	
 protected:
 	/*
@@ -100,7 +113,7 @@ protected:
 private:
 
 	/*
-	* The levels
+	* Levels loaded in scene
 	*/
 	UPROPERTY(VisibleAnywhere)
 		AProgressionData * Levels;
@@ -127,7 +140,7 @@ private:
 	 * The distance the ball has to be around the BallLocation
 	*/
 	UPROPERTY(VisibleAnywhere)
-		float CurrentRequiredDistance;
+		float CurrentTolerance;
 	/*
 	 * The current level the game is at
 	*/
@@ -139,7 +152,11 @@ private:
 	*/
 	UPROPERTY(VisibleAnywhere)
 		int CurrentLives;
-	
+	/*
+	 * The current time left
+	*/
+	UPROPERTY(VisibleAnywhere)
+		float CurrentTimeLeft;
 	/*
 	 * If the player has won the level
 	*/

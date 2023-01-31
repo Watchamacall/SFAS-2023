@@ -34,7 +34,7 @@ void UProGenMeshBase::CreateMesh()
 		Verticies[i] *= ObjectScale;
 		if (VertexColliders[i]->GetOwner())
 		{
-			VertexColliders[i]->SetWorldLocation(VertexColliders[i]->GetOwner()->GetActorLocation() + FVector(0.f, Verticies[i].X, Verticies[i].Z)); //Switching X and Y values since we are in World Space, not Local Space
+			VertexColliders[i]->SetWorldLocation(VertexColliders[i]->GetOwner()->GetActorLocation() + FVector(0.f, -Verticies[i].X, Verticies[i].Z)); //Switching X and Y values since we are in World Space, not Local Space
 		}
 	}
 
@@ -115,6 +115,7 @@ void UProGenMeshBase::UpdateMesh(int SidesOnShape, UStaticMesh* ColliderMesh)
 void UProGenMeshBase::UpdateMeshInternally()
 {
 	UVRecount();
+	ColliderRecount();
 	UpdateMeshSection_LinearColor(0, Verticies, Normals, UV0, VertexColours, Tangents);
 }
 void UProGenMeshBase::SetRandomVertexLocations()
@@ -132,6 +133,11 @@ void UProGenMeshBase::SetRandomVertexLocations()
 FVector UProGenMeshBase::GetVertex(int Index)
 {
 	return Verticies[Index];
+}
+
+int UProGenMeshBase::GetNumSides()
+{
+	return Verticies.Num();
 }
 
 void UProGenMeshBase::SetVertex(int Index, FVector NewVertex)
@@ -174,6 +180,14 @@ void UProGenMeshBase::UVRecount()
 	for (size_t CurrentUV = 0; CurrentUV < UV0.Num(); CurrentUV++)
 	{
 		UV0[CurrentUV] = FVector2D(Verticies[CurrentUV].X, Verticies[CurrentUV].Z);
+	}
+}
+
+void UProGenMeshBase::ColliderRecount()
+{
+	for (size_t i = 0; i < VertexColliders.Num(); i++)
+	{
+		VertexColliders[i]->SetWorldLocation(VertexColliders[i]->GetOwner()->GetActorLocation() + FVector(0.f, -Verticies[i].X, Verticies[i].Z));
 	}
 }
 

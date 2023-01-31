@@ -29,6 +29,11 @@ void UPlayingScreen::NativeConstruct()
 		{
 			PromptTextIndex = Count;
 		}
+		else if (Texts[Count]->GetName().Contains("Time"))
+		{
+			TimeRemainingFormat = Texts[Count]->Text;
+			TimeRemainingIndex = Count;
+		}
 	}
 
 	for(int Count = 0; Count < Images.Num(); ++Count)
@@ -45,6 +50,7 @@ void UPlayingScreen::NativeConstruct()
 	
 	SetLevel(1);
 	SetLives(0);
+	SetTimeRemaining(0.f);
 	
 	PlayingState = EPlayingState::Guessing;
 }
@@ -55,11 +61,11 @@ void UPlayingScreen::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	if(IsValid(PlayerController))
 	{
-		if(PlayingState == EPlayingState::Showing)
+		if(PlayingState == EPlayingState::Showing) //When pressing Select where you wanna place the Guess Marker
 		{
 			if(TargetImageIndex >= 0 && TargetImageIndex < Images.Num())
 			{
-				Images[TargetImageIndex]->SetOpacity(FMath::Clamp(Images[TargetImageIndex]->ColorAndOpacity.A + InDeltaTime, 0.0f, 1.0f));
+				Images[TargetImageIndex]->SetOpacity(FMath::Clamp(Images[TargetImageIndex]->ColorAndOpacity.A + InDeltaTime, 0.0f, 1.0f)); //Slowly bring in the TargetImage
 
 				if(GuessImageIndex >= 0 && GuessImageIndex < Images.Num())
 				{
@@ -81,6 +87,11 @@ void UPlayingScreen::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 				GuessSlot->SetPosition(GuessLocation);
 			}
 		}
+
+		if (TimeRemainingIndex >= 0 && TimeRemainingIndex < Texts.Num())
+		{
+			SetTimeRemaining(TimeTillWall -= InDeltaTime);
+		}
 	}
 }
 
@@ -100,12 +111,16 @@ void UPlayingScreen::Select_Implementation()
 		if (PlayerController->DeprojectScreenPositionToWorld(GuessPosition.X + (ViewportSizeX * .5f), GuessPosition.Y + (ViewportSizeY * .5f), WorldLocation, WorldDirection))
 		{
 			FHitResult Hit;
-			if (GetWorld()->LineTraceSingleByChannel(Hit, WorldLocation, WorldLocation + (WorldDirection * 5000.f), ECollisionChannel::ECC_WorldDynamic))
+			if (GetWorld()->LineTraceSingleByChannel(Hit, WorldLocation, WorldLocation + (WorldDirection * 100.f), ECollisionChannel::ECC_WorldDynamic))
 			{
 				//TODO: Add a variable which changes here, maybe just an int that relates to the LeftRight and UpDown of the PlayerController and allows for the movement of the Vertex (In the ProGenMeshBase Class) until Release where that variable is changed to -1 or something, saves having to rework this entire thing
 				DrawDebugLine(GetWorld(), WorldLocation, WorldLocation + (WorldDirection * 5000.f), FColor::Green, false, 10.f);
 				FName ComponentName = Hit.GetComponent()->GetFName();
-				UE_LOG(LogTemp, Display, TEXT("Component is: %s"), *ComponentName.ToString());
+				if (UStaticVertexCollider* Collider = Cast<UStaticVertexCollider>(Hit.GetComponent()))
+				{
+					PlayerController->SetSelectedVertex(Collider->VertexNo);
+				}
+
 			}
 		}
 	}
@@ -157,6 +172,13 @@ void UPlayingScreen::SetLives(int Lives)
 	if(LivesTextIndex >= 0 && LivesTextIndex < Texts.Num())
 	{
 		Texts[LivesTextIndex]->SetText(FText::Format(LivesTextFormat, Lives));
+	}
+}
+void UPlayingScreen::SetTimeRemaining(float TimeRemaining)
+{
+	if (TimeRemainingIndex >= 0 && TimeRemainingIndex < Texts.Num())
+	{
+		Texts[TimeRemainingIndex]->SetText(FText::Format(TimeRemainingFormat, FMath::Clamp((int)TimeRemaining, 0, TimeRemaining)));
 	}
 }
 
@@ -231,6 +253,7 @@ void UPlayingScreen::Reset()
 		{
 			const int Level = Gameplay->GetLevel() + 1;
 			SetLevel(Level);
+			TimeTillWall = Gameplay->GetTimeToImpact();
 		}
 	}
 

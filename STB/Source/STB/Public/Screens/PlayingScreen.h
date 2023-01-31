@@ -37,6 +37,7 @@ private:
 
 	void SetLevel(int Level);
 	void SetLives(int Lives);
+	void SetTimeRemaining(float TimeRemaining);
 	void ShowLevel(bool bShow);
 	void ShowLives(bool bShow);	
 	void ShowPrompt(bool bShow);	
@@ -51,6 +52,9 @@ private:
 	FText LivesTextFormat;
 
 	UPROPERTY(VisibleAnywhere)
+	FText TimeRemainingFormat;
+
+	UPROPERTY(VisibleAnywhere)
 	int TargetImageIndex;	
 
 	UPROPERTY(VisibleAnywhere)
@@ -63,7 +67,13 @@ private:
 	int LivesTextIndex;
 
 	UPROPERTY(VisibleAnywhere)
+	int TimeRemainingIndex;
+
+	UPROPERTY(VisibleAnywhere)
 	int PromptTextIndex;
+
+	UPROPERTY(VisibleAnywhere)
+		float TimeTillWall;
 
 	UPROPERTY(VisibleAnywhere)
 	EPlayingState PlayingState;

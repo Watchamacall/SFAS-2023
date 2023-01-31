@@ -64,6 +64,11 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable)
 		virtual FVector GetVertex(int Index);
+	/*
+	 * Returns the number of sides the shape has
+	*/
+	UFUNCTION(BlueprintCallable)
+		virtual int GetNumSides();
 
 	/*
 	 * Set's the vertex based at the Index with the NewVertex
@@ -105,7 +110,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TArray<FVector> Verticies;
 	/*
-	 * Holds the  
+	 * Holds the Collider data for the Verticies
 	*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TArray<UStaticVertexCollider*> VertexColliders;
@@ -147,4 +152,6 @@ protected:
 private:
 		UFUNCTION()
 			void UVRecount();
+		UFUNCTION()
+		void ColliderRecount();
 };

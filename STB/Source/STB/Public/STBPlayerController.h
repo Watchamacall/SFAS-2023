@@ -80,6 +80,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 		UStaticMesh* GetColliderMesh();
 	/*
+	 * Sets the variable SelectedVertex based on the NewSelectedVertex
+	*/
+	UFUNCTION(BlueprintCallable)
+		void SetSelectedVertex(int NewSelectedVertex);
+	/*
 	* Returns true if the PlayerLocation is within bounds of the CurrentBallLocation. See Gameplay->TryMove for more information.
 	*/
 	UFUNCTION(BlueprintCallable)
@@ -163,6 +168,8 @@ protected:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Generated Mesh")
 		UStaticMesh* ColliderMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Generated Mesh")
+		FName GeneratedMeshTag;
 	/*
 	 * The speed the whole object moves at 
 	*/
@@ -173,10 +180,29 @@ protected:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Movement Options|Single Vertex")
 		float VertexMoveSpeed = 5.f;
-
+	/*
+	 * The Actor holding the StaticMesh for the Wall
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wall")
 		AWall* WallComponent;
-
+	/*
+	 * The Actor holding the ProGenMeshBase for the wall
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wall")
+		AProMeshSquareActor* WallActorToShow;
+	/*
+	 * The rotation of the WallActorToShow whilst it's parented to the WallComponent
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wall")
+		FRotator WallActorToShowRotation = FRotator(90.f, 0.f, -90.f);
+	/*
+	 * The Tag which represents the WallMesh
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wall")
+		FName WallMeshTag;
+	/*
+	 * The Initial Vector the Wall will go to when starting a new game
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wall")
 		FVector WallInitialVector = FVector::ZeroVector;
 
@@ -291,7 +317,7 @@ private:
 #pragma endregion
 
 	float CurrentTimeWallInMotion = 0.f;
-
+	int SelectedVertex = -1;
 
 #pragma region ButtonBooleans
 	bool TopButton;

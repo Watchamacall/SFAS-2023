@@ -30,6 +30,7 @@ const FString ASTBPlayerController::RightTriggerAxisName = TEXT("RightTrigger");
 ASTBPlayerController::ASTBPlayerController()
 {
 	PlayerCameraManagerClass = ASTBPlayerCameraManager::StaticClass();
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void ASTBPlayerController::PreProcessInput(const float DeltaTime, const bool bGamePaused)
@@ -56,16 +57,31 @@ void ASTBPlayerController::BeginPlay()
 	{
 		Gameplay->SetOwner(this);
 		//Getting the Actor within the map since UProceduralMeshComponent is annoying and won't work if spawned in during runtime, at least I couldn't get it to work
-		const TActorIterator<AProMeshSquareActor> SquareTest(GetWorld());
+
+		TArray<AActor*> AllActorToShow;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AProMeshSquareActor::StaticClass(), AllActorToShow);
+
+		for (size_t i = 0; i < AllActorToShow.Num(); i++)
+		{
+			if (AllActorToShow[i]->ActorHasTag(GeneratedMeshTag))
+			{
+				ActorToShow = Cast<AProMeshSquareActor>(AllActorToShow[i]);
+				ActorToShow->StartEvent();
+			}
+			else if (AllActorToShow[i]->ActorHasTag(WallMeshTag))
+			{
+				WallActorToShow = Cast<AProMeshSquareActor>(AllActorToShow[i]);
+				WallActorToShow->StartEvent();
+			}
+		}
+		/*const TActorIterator<AProMeshSquareActor> SquareTest(GetWorld());
 		if (SquareTest)
 		{
 			ActorToShow = *SquareTest;
 			ActorToShow->StartEvent();
-		}
-		if (!Gameplay->ActorToShow)
-		{
-			Gameplay->ActorToShow = ActorToShow;
-		}
+		}*/
+		Gameplay->ActorToShow = ActorToShow;
+		Gameplay->WallActorToShow = WallActorToShow;
 
 		const TActorIterator<AWall> Wall(GetWorld());
 		if (Wall)
@@ -91,7 +107,16 @@ void ASTBPlayerController::Tick(float DeltaSeconds)
 		//TODO: Show where the current points are on the wall as it comes closer, allowing for precision
 
 		//TODO: Add the bonus content
-		
+		float Distance = FVector::Dist(ActorToShow->GetActorLocation(), WallComponent->GetActorLocation());
+		if (Distance < 1)
+		{
+			WallComponent->StopMovingWall();
+			//TODO: Show the current player's mesh points on the wall behind, try to make it look good, raycast n all that shiz
+			if (TryMove())
+			{
+				UE_LOG(LogTemp, Display, TEXT("Hey so you won well done!"));
+			}
+		}
 		//REMOVE THIS BEFORE PUBLISHING
 		const auto Bounds = Gameplay->GetCurrentBallBounds();
 		DrawDebugBox(GetWorld(), Bounds.Origin, Bounds.BoxExtent, FColor::Green, false, 0.2f, SDPG_Foreground, 1.0f);		
@@ -166,7 +191,7 @@ void ASTBPlayerController::BeginNewGame()
 		Gameplay->StartNewGame();
 		Gameplay->NextLevel();
 
-		WallComponent->StartMovingWall(WallInitialVector, Gameplay->GetTimeToImpact(), FVector::Dist(ActorToShow->BaseMesh->GetComponentLocation(), WallInitialVector));
+		WallComponent->StartMovingWall(WallInitialVector, Gameplay->GetTimeToImpact(), FVector::Dist(ActorToShow->GetActorLocation(), WallInitialVector));
 	}
 }
 
@@ -194,7 +219,7 @@ void ASTBPlayerController::ContinueGame()
 bool ASTBPlayerController::TryMove()
 {
 	//TODO: Change this function to work with checking the positions/colliders between eachother
-	return Gameplay->TryMove(CurrentPlayerLocation, GetCurrentBallLocation());
+	return Gameplay->TryMove(ActorToShow->BaseMesh, WallActorToShow->BaseMesh);
 }
 #pragma endregion
 
@@ -278,6 +303,10 @@ UStaticMesh* ASTBPlayerController::GetColliderMesh()
 {
 	return ColliderMesh;
 }
+void ASTBPlayerController::SetSelectedVertex(int NewSelectedVertex)
+{
+	SelectedVertex = NewSelectedVertex;
+}
 #pragma endregion
 #pragma region Movement Functions
 void ASTBPlayerController::LeftRight(float Value)
@@ -318,6 +347,10 @@ void ASTBPlayerController::LeftRight(float Value)
 		//TODO: Add some code here for a condition for a variable and if not that variable, get the Vertex and start moving it based on the values (Use what is in the region Button Movement[FunctionCall])
 
 		//Cursor Movement
+		if (SelectedVertex >= 0)
+		{
+			UpdateVertex('X', SelectedVertex, Value);
+		}
 		CurrentPlayerLocation.X = FMath::Clamp(CurrentPlayerLocation.X + Value, CursorXYMin.X, CursorXYMax.X);
 	}
 }
@@ -326,6 +359,11 @@ void ASTBPlayerController::UpDown(float Value)
 {
 	if(CurrentState == ESTBGameMode::Playing)
 	{
+		//Cursor Movement
+		if (SelectedVertex >= 0)
+		{
+			UpdateVertex('Z', SelectedVertex, Value);
+		}
 #pragma region Button Movement
 		//if (TopButton)
 		//{
@@ -442,6 +480,6 @@ void ASTBPlayerController::BottomButtonRelease()
 {
 	BottomButton = false;
 	UE_LOG(LogTemp, Display, TEXT("Released Bottom Button"));
-	//TODO: Include a change to a variable here based on the CurrentState and change it to -1 (Works in Tandem with the PlayingScreen Class
+	SetSelectedVertex(-1); //Invalidates the Vertex so no Verticies are changed
 }
 #pragma endregion
