@@ -116,6 +116,10 @@ void ASTBPlayerController::Tick(float DeltaSeconds)
 			{
 				UE_LOG(LogTemp, Display, TEXT("Hey so you won well done!"));
 			}
+			else
+			{
+				UE_LOG(LogTemp, Display, TEXT("Hey so you failed!"));
+			}
 		}
 		//REMOVE THIS BEFORE PUBLISHING
 		const auto Bounds = Gameplay->GetCurrentBallBounds();

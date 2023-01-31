@@ -11,16 +11,15 @@ AWall::AWall()
 void AWall::StartMovingWall(FVector InitialWallVector, float TimeForWallHit, float DistanceToTravel)
 {
 	SetActorLocation(InitialWallVector);
-	float MoveSpeedLocal = DistanceToTravel / TimeForWallHit;
-	bool MoveLocal = true;
-	MoveSpeed = MoveSpeedLocal;
-	Move = MoveLocal;
+	MoveSpeed = DistanceToTravel / TimeForWallHit;
+	Move = true;
 }
 
 void AWall::StopMovingWall()
 {
 	Move = false;
 }
+
 void AWall::Tick(float DeltaSeconds)
 {
 	if (Move)

@@ -103,6 +103,8 @@ bool UGameplay::TryMove(UProGenMeshBase* PlayerPoints, UProGenMeshBase* ActualPo
 	for (size_t CurrentVertex = 0; CurrentVertex < PlayerPoints->GetNumSides(); CurrentVertex++)
 	{
 		const float DistanceBetween = FVector::Dist(PlayerPoints->GetVertex(CurrentVertex), ActualPoints->GetVertex(CurrentVertex));
+		UE_LOG(LogTemp, Display, TEXT("DistanceBetween is: %f"), DistanceBetween);
+
 		if (DistanceBetween <= CurrentTolerance)
 		{
 			bWin = true;

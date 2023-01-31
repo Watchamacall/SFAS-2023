@@ -88,10 +88,23 @@ void UPlayingScreen::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 			}
 		}
 
-		if (TimeRemainingIndex >= 0 && TimeRemainingIndex < Texts.Num())
+		if (PlayingState == EPlayingState::Guessing)
 		{
-			SetTimeRemaining(TimeTillWall -= InDeltaTime);
+			if (TimeRemainingIndex >= 0 && TimeRemainingIndex < Texts.Num())
+			{
+				SetTimeRemaining(TimeTillWall -= InDeltaTime);
+				if (TimeTillWall <= 0) //If the wall is close to the player's mesh
+				{
+					const bool bWon = PlayerController->TryMove();
+					if (!bWon)
+					{
+						SetLives(PlayerController->GetGameplay()->GetLives());
+					}
+					DoReveal(bWon); //Reveal the case of who won
+				}
+			}
 		}
+
 	}
 }
 
@@ -222,6 +235,7 @@ void UPlayingScreen::SetBallLocation()
 
 void UPlayingScreen::DoReveal(const bool bLastGuessCorrect)
 {
+	//TODO: Update this function to show how correct the Player was
 	if(TargetImageIndex >= 0 && TargetImageIndex < Images.Num())
 	{
 		Images[TargetImageIndex]->SetBrushTintColor(bLastGuessCorrect ? WinColor : LoseColor);

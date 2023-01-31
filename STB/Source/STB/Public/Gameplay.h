@@ -16,40 +16,39 @@ class STB_API UGameplay : public UObject
 public:
 
 	UGameplay();
-
+	/*
+	 * Sets the Level based on the Data
+	*/
 	UFUNCTION(BlueprintCallable)
 	void SetLevels(AProgressionData * Data);
-
 	/*
 	* Resets the currentLevel and the currentLives
 	*/
 	UFUNCTION(BlueprintCallable)
 	void StartNewGame();
-
 	/*
 	* Clears up the level and starts the next level
 	*/
 	UFUNCTION(BlueprintCallable)
 	void NextLevel();	
-
 	/*
 	* Removes a life from the player
 	*/
 	UFUNCTION(BlueprintCallable)
 	void ResetLevel();
-	
 	/*
 	* Returns the Current Bounds of the Ball
 	*/
 	UFUNCTION(BlueprintCallable)
 	const FBoxSphereBounds& GetCurrentBallBounds() const;	
-
 	/*
 	* Returns the Ball's current location
 	*/
 	UFUNCTION(BlueprintCallable)
 	const FVector& GetBallLocation() const;
-	
+	/*
+	 * Returns the Time before the wall impacts
+	*/
 	UFUNCTION(BlueprintCallable)
 		int GetTimeToImpact() const;
 	/*
@@ -57,13 +56,11 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable)
 	int GetLevel() const;
-
 	/* 
 	* Returns the current lives of the player
 	*/
 	UFUNCTION(BlueprintCallable)
 	int GetLives() const;
-
 	/* 
 	* Returns if the player won or not
 	*/
@@ -91,7 +88,6 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable)
 	void ChooseRandomBallLocation();
-
 	/*
 	 * Pointer leading to the Actor which shows the player's mesh
 	*/
@@ -117,25 +113,21 @@ private:
 	*/
 	UPROPERTY(VisibleAnywhere)
 		AProgressionData * Levels;
-
 	/*
 	 * Bounds for the ball to move around
 	*/
 	UPROPERTY(VisibleAnywhere)
 		FBoxSphereBounds CurrentBallBounds; 
-
 	/*
 	 * The location of the ball the player needs to go near
 	*/
 	UPROPERTY(VisibleAnywhere)
 		FVector BallLocation;
-
 	/*
 	 * How long the wall moves for before a check is made
 	*/
 	UPROPERTY(VisibleAnywhere)
 		float CurrentTimeUntilImpact;
-
 	/*
 	 * The distance the ball has to be around the BallLocation
 	*/
@@ -146,7 +138,6 @@ private:
 	*/
 	UPROPERTY(VisibleAnywhere)
 		int CurrentLevel;
-
 	/*
 	 * The current lives the player has 
 	*/
@@ -162,6 +153,9 @@ private:
 	*/
 	UPROPERTY(VisibleAnywhere)
 		bool bWin;	
-
+	/*
+	 * The Actor that owns this object
+	*/
+	UPROPERTY()
 	AActor* Owner;
 };
