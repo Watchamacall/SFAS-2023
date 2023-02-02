@@ -157,7 +157,16 @@ protected:
 	*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Generated Mesh")
 		AProMeshSquareActor* ActorToShow;
-
+	/*
+	 * The speed the cursor will move when having no selection on a vertex
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cursor Speed")
+		float NoVertexCursorSpeed = 1.f;
+	/*
+	 * The speed the cursor will move when having a selected vertex
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cursor Speed")
+		float VertexCursorSpeed = .5f;
 	/*
 	 * Where the Generated Mesh will call it's origin
 	*/

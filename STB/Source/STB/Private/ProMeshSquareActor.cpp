@@ -9,8 +9,9 @@ AProMeshSquareActor::AProMeshSquareActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	BaseMesh = CreateDefaultSubobject<UProGenMeshBase>(TEXT("Generated Mesh"));
-	RootComponent = BaseMesh;
+	RootComponent = CreateDefaultSubobject<UProGenMeshBase>(TEXT("Generated Mesh"));
+
+	BaseMesh = Cast<UProGenMeshBase>(RootComponent);
 }
 
 void AProMeshSquareActor::StartEvent_Implementation()

@@ -83,5 +83,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	FColor LoseColor = FColor::Red;
+	UPROPERTY(EditAnywhere)
+	float LinecastDistance = 5000.f;
 
 };

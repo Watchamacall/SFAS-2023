@@ -354,8 +354,12 @@ void ASTBPlayerController::LeftRight(float Value)
 		if (SelectedVertex >= 0)
 		{
 			UpdateVertex('X', SelectedVertex, Value);
+			CurrentPlayerLocation.X = FMath::Clamp(CurrentPlayerLocation.X + (Value * VertexCursorSpeed), CursorXYMin.X, CursorXYMax.X);
 		}
-		CurrentPlayerLocation.X = FMath::Clamp(CurrentPlayerLocation.X + Value, CursorXYMin.X, CursorXYMax.X);
+		else
+		{
+			CurrentPlayerLocation.X = FMath::Clamp(CurrentPlayerLocation.X + (Value * NoVertexCursorSpeed), CursorXYMin.X, CursorXYMax.X);
+		}
 	}
 }
 
@@ -367,6 +371,12 @@ void ASTBPlayerController::UpDown(float Value)
 		if (SelectedVertex >= 0)
 		{
 			UpdateVertex('Z', SelectedVertex, Value);
+			CurrentPlayerLocation.Y = FMath::Clamp(CurrentPlayerLocation.Y - (Value * VertexCursorSpeed), CursorXYMin.Y, CursorXYMax.Y);
+
+		}
+		else
+		{
+			CurrentPlayerLocation.Y = FMath::Clamp(CurrentPlayerLocation.Y - (Value * VertexCursorSpeed), CursorXYMin.Y, CursorXYMax.Y);
 		}
 #pragma region Button Movement
 		//if (TopButton)
@@ -399,7 +409,6 @@ void ASTBPlayerController::UpDown(float Value)
 		//ActorToShow->BaseMesh->SetWorldLocation(CurrentLocation);
 		
 		//Cursor Movement
-		CurrentPlayerLocation.Y = FMath::Clamp(CurrentPlayerLocation.Y - Value, CursorXYMin.Y, CursorXYMax.Y);
 	}
 }
 
