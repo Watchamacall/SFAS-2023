@@ -46,7 +46,6 @@ void UProGenMeshBase::CreateMesh()
 #pragma region Update Mesh
 void UProGenMeshBase::UpdateMesh(int SidesOnShape, UStaticMesh* ColliderMesh)
 {
-	//TODO: Add BoxCollider on each of the verticies and label them with the VertexIndex. Make the boxes a little bigger than the Vertex just for the Raycast
 
 	if (SidesOnShape <= 2)
 	{
@@ -62,6 +61,7 @@ void UProGenMeshBase::UpdateMesh(int SidesOnShape, UStaticMesh* ColliderMesh)
 	UV0.Empty();
 	Tangents.Empty();
 	VertexColours.Empty();
+	OnWallHit.Empty();
 
 	//Setting all the Verticies in the shape and equating them to a circle
 	float Angle = 360.f / SidesOnShape;
@@ -77,6 +77,7 @@ void UProGenMeshBase::UpdateMesh(int SidesOnShape, UStaticMesh* ColliderMesh)
 		//Setting the collider for the vertex
 		FString CurrentColliderName = FString::Format(TEXT("Collider For Vertex {0}"), TArray<FStringFormatArg>{CurrentSide});
 		UStaticVertexCollider* CurrentCollider = NewObject<UStaticVertexCollider>(this->GetOwner(), (FName)CurrentColliderName);
+		CurrentCollider->SetMaterial(0, VertexColliderMaterial);
 
 		//Attaching Collider
 		CurrentCollider->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
@@ -92,6 +93,26 @@ void UProGenMeshBase::UpdateMesh(int SidesOnShape, UStaticMesh* ColliderMesh)
 
 		VertexColliders.Add(CurrentCollider);
 
+		if (bCanSendRay)
+		{
+			//Spawning the Collider which will be shown on the wall mesh
+			CurrentColliderName = FString::Format(TEXT("Visual For Current Vertex {0}"), TArray<FStringFormatArg>{CurrentSide});
+			UStaticMeshComponent* MeshShown = NewObject<UStaticMeshComponent>(this->GetOwner(), (FName)CurrentColliderName);
+
+			//Attaching Collider
+			MeshShown->AttachToComponent(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			MeshShown->RegisterComponent();
+
+			//Setting World Transform
+			ColliderTransform = FTransform(FRotator(0.f, 0.f, -90.f), this->GetComponentLocation(), ShownColliderScale);
+			MeshShown->SetWorldTransform(ColliderTransform);
+
+			//Setting the mesh for this and the material
+			MeshShown->SetStaticMesh(ShownColliderMesh);
+			MeshShown->SetMaterial(0, ShownColliderMaterial);
+
+			OnWallHit.Add(MeshShown);
+		}
 		//Normals
 		Normals.Add(FVector(1.f, 0.f, 0.f));
 		//UV0
@@ -172,6 +193,7 @@ FXYMinMax UProGenMeshBase::GetVertexMinMax(int Index)
 void UProGenMeshBase::BeginPlay()
 {
 	Super::BeginPlay();
+	bCanSendRay ? PrimaryComponentTick.bCanEverTick = true : PrimaryComponentTick.bCanEverTick = false;
 	CreateMesh();
 }
 

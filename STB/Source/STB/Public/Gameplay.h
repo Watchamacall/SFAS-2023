@@ -6,6 +6,7 @@
 #include "ProgressionData.h"
 #include "ProMeshSquareActor.h"
 #include "DependancyRemover.h"
+#include "./Screens/PlayingScreen.h"
 #include "Gameplay.generated.h"
 
 UCLASS()

@@ -44,6 +44,7 @@ private:
 	void SetBallLocation();
 	void DoReveal(const bool bLastGuessCorrect);
 	void Reset();
+	
 
 	UPROPERTY(VisibleAnywhere)
 	FText LevelTextFormat;
@@ -83,7 +84,16 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	FColor LoseColor = FColor::Red;
+public:
+	UFUNCTION(BlueprintCallable)
+	void SetGuessColor(FLinearColor NewColor);
+	UPROPERTY(EditAnywhere)
+		FLinearColor SelectedColor = FColor::Orange;
+	UPROPERTY(VisibleAnywhere)
+		FLinearColor OriginalColor = FColor::Red;
 	UPROPERTY(EditAnywhere)
 	float LinecastDistance = 5000.f;
+	UPROPERTY(EditAnywhere)
+		float AccuracyMultiplier = .8f;
 
 };

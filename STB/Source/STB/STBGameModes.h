@@ -10,6 +10,7 @@ enum class ESTBGameMode : uint8
 	Settings,
 	Playing,
 	GameOver,
+	Win,
 	Outro,
 
 	NumModes

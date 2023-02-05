@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "STBPlayerController.h"
+#include "../UIBaseWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Screen.generated.h"
 
@@ -27,7 +28,7 @@ enum class EScreenState : uint8
  * Class to control the functionality of a single menu
  */
 UCLASS()
-class STB_API UScreen : public UUIBaseWidget
+class STB_API UScreen : public UUserWidget
 {
 	GENERATED_BODY()
 

@@ -95,44 +95,61 @@ public:
 
 protected:
 	/*
+	 * Can this send a ray
+	*/
+	UPROPERTY(EditAnywhere, Category = "Ray Casting")
+		bool bCanSendRay = false;
+	/*
+	 * The normal the ray will go 
+	*/
+	UPROPERTY(EditAnywhere, Category = "Ray Casting")
+		FVector RayNormal = FVector::XAxisVector;
+	/*
+	 * The distance the ray will go
+	*/
+	UPROPERTY(EditAnywhere, Category = "Ray Casting")
+		float RayNormalDist = 5000.f;
+	/*
 	 * The overall scale of the object
 	*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh Properties")
 		FVector ObjectScale;
 	/*
 	 * The tries of the object, count must be a multiple of 3
 	*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh Properties")
 		TArray<int32> Triangles;
 	/*
 	 * The verticies of the object, can be any number
 	*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh Properties")
 		TArray<FVector> Verticies;
 	/*
 	 * Holds the Collider data for the Verticies
 	*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vertex Show")
 		TArray<UStaticVertexCollider*> VertexColliders;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vertex Show|Textures")
+		UMaterial* VertexColliderMaterial;
 	/*
 	 * This sorta exists
 	*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh Properties|Textures")
 		TArray<FVector> Normals;
 	/*
 	 * UV is the map for texturing, more complex objects will have more precise numbers, must match the number of verticies
 	*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh Properties|Textures")
 		TArray<FVector2D> UV0;
 	/*
 	 * This sorta exists
 	*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh Properties")
 		TArray<FProcMeshTangent> Tangents;
 	/*
 	 * The colour of the objects Verticies
 	*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Mesh Properties")
 		TArray<FLinearColor> VertexColours;
 	/*
 	 * Mapping the Face Buttons to Index Numbers
@@ -142,8 +159,31 @@ protected:
 	/*
 	 * The Minimum and Maximum for the Verticies to move
 	*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh Properties")
 		TArray<FXYMinMax> VertexMinMax;
+	/*
+	 * 
+	*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Shown Point")
+		TArray<UStaticMeshComponent*> OnWallHit;
+	/*
+	 * 
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shown Point")
+		UStaticMesh* ShownColliderMesh;
+	/*
+	 * 
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shown Point")
+		UMaterial* ShownColliderMaterial;
+	/*
+	 * 
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Shown Point")
+		FVector ShownColliderScale = FVector(.1f, .1f, .1f);
+	/*
+	 * The scale of the Vertex Colliders
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		FVector VertexColliderScale = FVector(.05f, .05f, .05f);
 	//TODO: Add more button combinations to this and make it up to like 8 button presses

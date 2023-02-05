@@ -146,7 +146,7 @@ void UScreen::OnHidden_Implementation()
 #pragma endregion
 
 /// <summary>
-/// Sets the state of the 
+/// Sets the state of the current Screen
 /// </summary>
 /// <param name="InState"></param>
 void UScreen::SetState(EScreenState InState)

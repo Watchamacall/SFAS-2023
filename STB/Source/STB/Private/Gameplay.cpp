@@ -1,4 +1,5 @@
 ﻿#include "Gameplay.h"
+#include "../STBGameModes.h"
 
 UGameplay::UGameplay()
 {
@@ -44,8 +45,18 @@ void UGameplay::NextLevel()
 				//Wall Controlled Mesh Compilation
 				WallActorToShow->UpdateEvent(LevelData->AmountOfSidesOnShape, player->GetColliderMesh());
 				WallActorToShow->BaseMesh->SetVertexMinMax(SingleVertBounds.XYMin, SingleVertBounds.XYMax);
+
+				player->WallComponent->StartMovingWall(player->WallInitialVector, GetTimeToImpact(), FVector::Dist(ActorToShow->GetActorLocation(), player->WallInitialVector));
 			}
 			ChooseRandomBallLocation();
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("You won the entire game!"));
+		if (ASTBPlayerController* player = Cast<ASTBPlayerController>(Owner))
+		{
+			player->ShowUI(ESTBGameMode::Win);
 		}
 	}
 }
@@ -97,13 +108,11 @@ void UGameplay::SetOwner(AActor* NewOwner)
 
 bool UGameplay::TryMove(UProGenMeshBase* PlayerPoints, UProGenMeshBase* ActualPoints)
 {
-	//TODO: Add a scoring system here based on the gap between the points, outside tolerance = loss otherwise add score
 	bWin = false;
 
 	for (size_t CurrentVertex = 0; CurrentVertex < PlayerPoints->GetNumSides(); CurrentVertex++)
 	{
 		const float DistanceBetween = FVector::Dist(PlayerPoints->GetVertex(CurrentVertex), ActualPoints->GetVertex(CurrentVertex));
-		UE_LOG(LogTemp, Display, TEXT("DistanceBetween is: %f"), DistanceBetween);
 
 		if (DistanceBetween <= CurrentTolerance)
 		{
@@ -125,9 +134,4 @@ void UGameplay::ChooseRandomBallLocation()
 {
 	WallActorToShow->BaseMesh->SetRandomVertexLocations();
 	WallActorToShow->BaseMesh->UpdateMeshInternally();
-
-	BallLocation = CurrentBallBounds.Origin;
-	BallLocation.X += FMath::RandRange( -CurrentBallBounds.BoxExtent.X, CurrentBallBounds.BoxExtent.X );
-	BallLocation.Y += FMath::RandRange( -CurrentBallBounds.BoxExtent.Y, CurrentBallBounds.BoxExtent.Y );
-	BallLocation.Z += FMath::RandRange( -CurrentBallBounds.BoxExtent.Z, CurrentBallBounds.BoxExtent.Z );
 }

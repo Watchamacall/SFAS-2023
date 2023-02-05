@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include <STB/UIManagerComponent.h>
 #include "ProMeshSquareActor.h"
 #include "Wall.h"
 #include "STBPlayerController.generated.h"
@@ -177,8 +176,16 @@ protected:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Generated Mesh")
 		UStaticMesh* ColliderMesh;
+	/*
+	 * The tag the Generated Mesh will have
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Generated Mesh")
 		FName GeneratedMeshTag;
+	/*
+	 * The Material the mesh will use
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Generated Mesh")
+		UMaterial* MeshMaterial;
 	/*
 	 * The speed the whole object moves at 
 	*/
@@ -189,6 +196,7 @@ protected:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Movement Options|Single Vertex")
 		float VertexMoveSpeed = 5.f;
+	public:
 	/*
 	 * The Actor holding the StaticMesh for the Wall
 	*/
