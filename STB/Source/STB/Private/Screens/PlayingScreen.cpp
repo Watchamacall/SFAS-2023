@@ -13,6 +13,8 @@ void UPlayingScreen::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
+
 	for(int Count = 0; Count < Texts.Num(); ++Count)
 	{
 		if(Texts[Count]->GetName().Contains("Level"))
@@ -83,7 +85,7 @@ void UPlayingScreen::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		if(GuessImageIndex >= 0 && GuessImageIndex < Images.Num())
 		{
 			const FVector2D GuessLocation = PlayerController->GetCurrentPlayerLocation();
-			if(UCanvasPanelSlot* GuessSlot = Cast<UCanvasPanelSlot>(Images[GuessImageIndex]->Slot))
+			if (UCanvasPanelSlot* GuessSlot = Cast<UCanvasPanelSlot>(Images[GuessImageIndex]->Slot))
 			{
 				GuessSlot->SetPosition(GuessLocation);
 			}
@@ -115,17 +117,26 @@ void UPlayingScreen::Select_Implementation()
 	{
 		if (PlayingState == EPlayingState::Guessing)
 		{
-			FVector2D GuessPosition = (Cast<UCanvasPanelSlot>(Images[GuessImageIndex]->Slot)->GetPosition() * AccuracyMultiplier);
+			
 			FVector WorldLocation;
 			FVector WorldDirection;
 
 			//Since the GuessPosition origin is the center of the screen whilst the Deproject origin is top left, add the Viewport * .5f to center it and get accurate direction
 			FVector2D ViewportSizeTotal;
+
 			auto Viewport = GWorld->GetGameViewport();
 			Viewport->GetViewportSize(ViewportSizeTotal);
 
+			FVector2D AccuracyMulti = FVector2D(ViewportSizeTotal.X / 1920.f , ViewportSizeTotal.Y / 1080.f);
+
+			FVector2D GuessPosition = (Cast<UCanvasPanelSlot>(Images[GuessImageIndex]->Slot)->GetPosition()* AccuracyMulti);
+				
+
 			ViewportSizeTotal *= .5f;
 			ViewportSizeTotal = FVector2D(ViewportSizeTotal.X + GuessPosition.X, ViewportSizeTotal.Y + GuessPosition.Y);
+
+			GetWorld()->GetFirstPlayerController()->SetMouseLocation(ViewportSizeTotal.X, ViewportSizeTotal.Y);
+
 			FHitResult Hit;
 
 			//TODO: Fix the Direction the ray goes, currently moves too far in all directions
